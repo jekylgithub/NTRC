@@ -1,0 +1,2080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NTRC — Not the Ryder Cup</title>
+<style>
+:root{
+  --paper:#f7f4ec; --card:#fdfcf8; --ink:#1c2740; --navy:#122341; --navy2:#1a2f54;
+  --mut:#7a7466; --faint:#a49d8d; --hair:#e2dccb; --hair2:#cfc7ae;
+  --gold:#a8863c; --gold-pale:#d9c89a; --gold-wash:rgba(168,134,60,.07);
+  --red:#a32636; --blue:#1e4f8f;
+  --serif:"Charter","Bitstream Charter","Iowan Old Style",Palatino,"Palatino Linotype",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;line-height:1.45;}
+.t-r{color:var(--red);} .t-b{color:var(--blue);} .mutd{color:var(--mut);}
+
+/* app chrome */
+.chrome{position:sticky;top:0;z-index:20;background:var(--navy);color:#f4f1e8;
+  box-shadow:0 2px 10px rgba(18,35,65,.25);}
+.chrome-in{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:10px;
+  padding:10px 14px 0;flex-wrap:wrap;}
+.brand{font-family:var(--serif);font-weight:700;font-size:17px;letter-spacing:.04em;}
+.brand em{font-style:normal;color:var(--gold-pale);}
+.yearsel{margin-left:auto;}
+.yearsel select{font-family:var(--sans);font-size:13px;background:var(--navy2);color:#f4f1e8;
+  border:1px solid rgba(217,200,154,.4);border-radius:4px;padding:5px 8px;}
+.tabs{max-width:960px;margin:0 auto;display:flex;gap:2px;overflow-x:auto;padding:6px 8px 0;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;background:none;border:none;color:rgba(244,241,232,.66);font-family:var(--sans);
+  font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+  padding:9px 12px 11px;cursor:pointer;border-bottom:2px solid transparent;}
+.tab.on{color:var(--gold-pale);border-bottom-color:var(--gold);}
+.yrs{max-width:960px;margin:0 auto;display:flex;justify-content:center;gap:7px;
+  padding:9px 10px 11px;flex-wrap:wrap;border-top:1px solid rgba(217,200,154,.14);}
+.yr-pill{font-family:var(--sans);font-size:10.5px;letter-spacing:.16em;font-weight:600;
+  color:rgba(244,241,232,.55);background:none;border:1px solid rgba(217,200,154,.28);
+  border-radius:999px;padding:5px 13px;cursor:pointer;font-variant-numeric:tabular-nums;}
+.yr-pill.on{color:var(--gold-pale);border-color:var(--gold);background:rgba(217,200,154,.1);}
+.wrap{max-width:960px;margin:0 auto;padding:clamp(22px,4vw,44px) clamp(14px,4vw,40px) 80px;}
+
+/* masthead / plaque / shared (approved design) */
+.mast{text-align:center;}
+.kicker{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.mast h1{margin:0;font-family:var(--serif);font-weight:700;color:var(--navy);
+  font-size:clamp(28px,6vw,46px);line-height:1.05;text-wrap:balance;}
+.mast-rule{display:flex;align-items:center;gap:14px;margin:14px auto 10px;max-width:400px;}
+.mast-rule span{flex:1;height:1px;background:var(--hair2);}
+.mast-rule em{font-family:var(--serif);font-style:normal;color:var(--gold);font-size:16px;letter-spacing:.22em;}
+.subtitle{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);}
+.plaque{margin:clamp(22px,4vw,36px) auto 0;max-width:620px;}
+.plq-in{background:linear-gradient(180deg,var(--navy2),var(--navy));border-radius:6px;
+  box-shadow:inset 0 0 0 1px rgba(217,200,154,.55), inset 0 0 0 5px var(--navy), inset 0 0 0 6px rgba(217,200,154,.25),
+  0 12px 30px rgba(18,35,65,.18);
+  padding:clamp(18px,4vw,30px) clamp(16px,4vw,36px);text-align:center;color:#f4f1e8;}
+.plq-label{font-size:10px;letter-spacing:.4em;text-transform:uppercase;color:var(--gold-pale);margin-bottom:8px;}
+.plq-row{display:flex;align-items:center;justify-content:center;gap:clamp(12px,4vw,30px);}
+.plq-team{font-family:var(--serif);font-size:clamp(14px,3vw,20px);letter-spacing:.22em;text-transform:uppercase;
+  display:flex;flex-direction:column;align-items:center;gap:5px;}
+.plq-red{color:#e4a9a9;} .plq-blue{color:#a9c2e8;}
+.plq-stars{font-size:8.5px;letter-spacing:.24em;color:var(--gold-pale);opacity:.75;text-indent:.24em;}
+.plq-capn{font-family:var(--sans);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(244,241,232,.55);white-space:nowrap;display:flex;align-items:center;gap:5px;}
+.plq-capn .capb{width:13px;height:13px;line-height:13px;font-size:8px;vertical-align:0;flex:none;}
+.plq-score{font-family:var(--serif);font-variant-numeric:tabular-nums lining-nums;
+  display:flex;align-items:baseline;gap:clamp(8px,2vw,16px);line-height:1;}
+.plq-score b{font-weight:700;font-size:clamp(48px,12vw,92px);white-space:nowrap;}
+.plq-score i{font-style:normal;font-size:clamp(22px,5vw,40px);color:var(--gold-pale);
+  align-self:center;line-height:1;transform:translateY(-.08em);}
+.plq-score .fr{font-size:.5em;vertical-align:.12em;letter-spacing:0;}
+.plq-score.plq-tight b{font-size:clamp(38px,9vw,72px);}
+.plq-score.plq-tight i{font-size:clamp(18px,4vw,32px);}
+.plq-verdict{margin-top:12px;font-size:clamp(11px,2.2vw,14px);letter-spacing:.26em;text-transform:uppercase;color:var(--gold-pale);}
+.plq-sub{margin-top:7px;font-size:10.5px;letter-spacing:.1em;color:rgba(244,241,232,.55);text-transform:uppercase;}
+.days{display:grid;grid-template-columns:repeat(4,1fr);margin:clamp(24px,4vw,40px) 0 0;
+  border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);}
+.dy{padding:18px 6px 16px;text-align:center;border-left:1px solid var(--hair);}
+.dy:first-child{border-left:0;}
+.dy-n{font-family:var(--serif);font-size:14px;color:var(--navy);font-weight:700;}
+.dy-m{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-top:2px;}
+.dy-s{font-family:var(--serif);font-variant-numeric:tabular-nums lining-nums;font-weight:700;
+  font-size:clamp(20px,4vw,28px);margin-top:9px;display:flex;justify-content:center;gap:6px;align-items:baseline;}
+.dy-dash{color:var(--faint);font-weight:400;}
+.dy-w{margin-top:7px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;}
+.w-red{color:var(--red);} .w-blue{color:var(--blue);} .w-halved{color:var(--mut);} .w-none{color:var(--faint);}
+.dy-c{margin-top:3px;font-size:10px;color:var(--faint);font-variant-numeric:tabular-nums;}
+.sec{margin-top:clamp(30px,5vw,48px);}
+.sec-t{margin:0;font-family:var(--serif);font-weight:700;color:var(--navy);text-align:center;
+  font-size:clamp(22px,4.2vw,30px);}
+.sec-s{text-align:center;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);
+  margin:7px 0 22px;}
+.mpd{margin-bottom:26px;}
+.mpd-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  border-bottom:1px solid var(--hair2);padding-bottom:7px;margin-bottom:10px;}
+.mpd-t{font-family:var(--serif);font-weight:700;color:var(--navy);font-size:15px;}
+.mpd-s{font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;}
+.grps{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;}
+.grp{background:var(--card);border:1px solid var(--hair);border-radius:4px;padding:11px 14px;}
+.grp-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
+.tee{font-size:10.5px;letter-spacing:.16em;color:var(--gold);font-weight:600;text-transform:uppercase;}
+.gfmt{font-size:9.5px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;}
+.sgl{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:9px;padding:6px 0;
+  border-top:1px solid var(--hair);}
+.sgl:first-of-type{border-top:0;}
+.nm{font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);}
+.nm:last-child{text-align:right;}
+.nm.win{font-weight:700;}
+.nm.lose{color:var(--faint);}
+.sc-note{font-family:var(--serif);font-size:13px;font-weight:700;white-space:nowrap;}
+.sc-halved{color:var(--mut);font-weight:400;}
+.sc-tbd{color:var(--faint);font-weight:400;font-size:11px;letter-spacing:.1em;}
+.fb{margin-top:7px;padding-top:6px;border-top:1px solid var(--hair);text-align:center;
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);}
+.fb b{font-weight:700;}
+.lb{border-top:2px solid var(--navy);border-bottom:1px solid var(--hair2);}
+.row{display:grid;grid-template-columns:42px 1fr 160px 58px 60px 52px;gap:9px;align-items:center;
+  padding:11px 6px;border-top:1px solid var(--hair);}
+.row.hd{border-top:0;padding:8px 6px;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--mut);font-weight:600;}
+.row.champ{background:var(--gold-wash);}
+.c-pos{font-family:var(--serif);color:var(--mut);font-size:14px;}
+.row.champ .c-pos{color:var(--gold);font-weight:700;}
+.c-name{font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap;}
+.c-team{width:7px;height:7px;border-radius:50%;flex:none;}
+.c-red{background:var(--red);} .c-blue{background:var(--blue);}
+.rtag{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;flex:none;
+  padding:2px 6px;border-radius:3px;}
+.rtag-gold{color:var(--gold);border:1px solid var(--gold-pale);background:#fff;}
+.rtag-mute{color:var(--mut);border:1px solid var(--hair2);background:#fff;}
+.stars{color:var(--gold);font-size:11px;letter-spacing:.06em;}
+.c-rounds{font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--mut);white-space:nowrap;}
+.c-rounds s{color:var(--faint);}
+.c-rec{font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--mut);text-align:center;}
+.c-b3{font-family:var(--serif);font-variant-numeric:tabular-nums lining-nums;font-weight:700;
+  font-size:19px;color:var(--navy);text-align:right;}
+.row.champ .c-b3{color:var(--gold);}
+.c-nett{font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--mut);text-align:right;}
+.note{color:var(--faint);font-size:11px;margin-top:12px;text-align:center;}
+.menu{background:var(--card);border:1px solid var(--hair2);border-radius:4px;
+  box-shadow:inset 0 0 0 4px var(--card), inset 0 0 0 5px var(--gold-pale);
+  padding:clamp(20px,4vw,38px) clamp(16px,4vw,46px);
+  display:grid;grid-template-columns:repeat(2,1fr);gap:26px 40px;}
+.aw{text-align:center;}
+.aw-rule{width:26px;height:1px;background:var(--gold);margin:0 auto 10px;}
+.aw-title{margin:0;font-family:var(--serif);font-weight:700;font-size:16px;color:var(--navy);}
+.aw-who{margin-top:4px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;}
+.who-red{color:var(--red);} .who-blue{color:var(--blue);} .who-plain{color:var(--gold);}
+.aw-stat{margin-top:6px;font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums;}
+.aw-quote{margin:7px 0 0;font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink);line-height:1.5;}
+.quart{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);}
+.q{text-align:center;padding:18px 8px;border-left:1px solid var(--hair);}
+.q:first-child{border-left:0;}
+.q-n{font-family:var(--serif);font-weight:700;font-size:clamp(26px,4.6vw,38px);color:var(--navy);line-height:1;}
+.q-l{margin-top:7px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);line-height:1.6;}
+.q-l b{color:var(--ink);}
+.foot{margin-top:clamp(34px,6vw,52px);padding-top:18px;border-top:1px solid var(--hair2);
+  text-align:center;color:var(--faint);font-size:10px;letter-spacing:.24em;text-transform:uppercase;}
+
+/* records */
+.tally{display:flex;justify-content:center;align-items:baseline;gap:clamp(14px,4vw,30px);margin:10px 0 4px;}
+.tally .n{font-family:var(--serif);font-weight:700;font-size:clamp(40px,9vw,72px);line-height:1;}
+.tally .v{font-family:var(--serif);color:var(--faint);font-size:clamp(18px,4vw,30px);}
+.tally-sub{text-align:center;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);margin-bottom:6px;}
+.roll{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;}
+.roll .r{background:var(--card);border:1px solid var(--hair);border-radius:4px;padding:12px;text-align:center;}
+.roll .ry{font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;font-weight:700;}
+.roll .rc{font-family:var(--serif);font-weight:700;margin-top:4px;font-size:14.5px;}
+.roll .rs{font-size:10.5px;color:var(--mut);margin-top:2px;}
+.crow{display:grid;grid-template-columns:1fr 44px 52px 70px 52px;gap:8px;align-items:center;
+  padding:9px 6px;border-top:1px solid var(--hair);font-variant-numeric:tabular-nums;}
+.crow.hd{border-top:0;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-weight:600;}
+.crow>div{text-align:center;font-size:12.5px;color:var(--mut);}
+.crow>div:first-child{text-align:left;font-size:13.5px;color:var(--ink);font-weight:600;display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.grudge{display:flex;justify-content:space-between;gap:10px;padding:9px 6px;border-top:1px solid var(--hair);
+  font-size:13px;flex-wrap:wrap;}
+.grudge b{font-weight:700;}
+.grudge .gr{color:var(--mut);font-variant-numeric:tabular-nums;}
+
+/* player dossiers */
+.pp-picker{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:6px 0 10px;}
+.pp-pill{font-family:var(--sans);font-size:10.5px;letter-spacing:.1em;font-weight:600;
+  color:var(--mut);background:#fff;border:1px solid var(--hair2);border-radius:999px;
+  padding:6px 12px;cursor:pointer;}
+.pp-pill.on{color:var(--gold);border-color:var(--gold);background:var(--gold-wash);}
+.srow{display:grid;grid-template-columns:minmax(120px,1fr) auto;gap:2px 14px;align-items:baseline;
+  padding:11px 6px;border-top:1px solid var(--hair);}
+.srow:first-of-type{border-top:0;}
+.srow .sl{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-weight:600;}
+.srow .sv{font-family:var(--serif);font-weight:700;font-size:19px;color:var(--navy);
+  text-align:right;font-variant-numeric:tabular-nums lining-nums;}
+.srow .sn{grid-column:1 / -1;font-family:var(--serif);font-style:italic;font-size:12.5px;color:var(--faint);}
+
+/* share + publish */
+.share-row{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:22px;flex-wrap:wrap;}
+.share-row .note{margin-top:0;}
+details summary::-webkit-details-marker{color:var(--gold);}
+
+/* captains, cement, scheme */
+.capb{display:inline-block;font-family:var(--serif);font-weight:700;font-size:10px;color:#fff;
+  background:var(--gold);border-radius:50%;width:16px;height:16px;line-height:16px;
+  text-align:center;vertical-align:2px;letter-spacing:0;}
+.pdiv{text-align:center;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);
+  margin:12px 0 8px;display:flex;align-items:center;gap:10px;}
+.pdiv::before,.pdiv::after{content:"";flex:1;height:1px;background:var(--hair);}
+.pill.off{opacity:.42;cursor:default;}
+.col-cap{font-family:var(--sans);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--gold);font-weight:700;margin-top:4px;}
+.col-cap.mutd{color:var(--faint);}
+.scheme{margin-top:16px;}
+.sch-row{font-size:13.5px;padding:4px 0;font-variant-numeric:tabular-nums;}
+.sch-row b{font-family:var(--serif);font-size:16px;color:var(--navy);}
+
+/* tour party setup */
+.party{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pcol{background:var(--card);border:1px solid var(--hair);border-radius:4px;padding:10px;min-height:120px;}
+.col-h{font-family:var(--serif);font-weight:700;font-size:14px;text-align:center;
+  padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--hair);}
+.pill{display:flex;align-items:center;gap:8px;padding:9px 10px;margin-bottom:6px;
+  border:1px dashed var(--hair2);border-radius:999px;cursor:pointer;background:#fff;
+  color:var(--faint);user-select:none;-webkit-user-select:none;}
+.pill .pl-nm{flex:1;font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pill .pl-h{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.pill .pl-h em{font-style:normal;font-size:9.5px;color:var(--faint);}
+.pill.on{border-style:solid;color:var(--ink);}
+.pill.on.p-red{border-color:var(--red);box-shadow:inset 3px 0 0 var(--red);}
+.pill.on.p-blue{border-color:var(--blue);box-shadow:inset 3px 0 0 var(--blue);}
+.pill .mv{border:none;background:var(--paper);color:var(--mut);border-radius:50%;
+  width:26px;height:26px;cursor:pointer;font-size:13px;flex:none;}
+.ringer{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.ringer input,.ringer select{font-size:14px;padding:9px 10px;border:1px solid var(--hair2);
+  border-radius:4px;background:#fff;color:var(--ink);font-family:var(--sans);min-width:0;}
+.ringer input:first-child{flex:1;min-width:140px;}
+@media(max-width:520px){.party{grid-template-columns:1fr;}}
+
+/* enter */
+.panel{background:var(--card);border:1px solid var(--hair);border-radius:4px;padding:16px;margin-bottom:16px;}
+.chips-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.chip-btn{font-family:var(--sans);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
+  border:1px solid var(--hair2);background:#fff;color:var(--mut);border-radius:4px;padding:8px 13px;cursor:pointer;}
+.chip-btn.on{border-color:var(--gold);color:var(--gold);background:var(--gold-wash);}
+.erow{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--hair);}
+.erow:first-of-type{border-top:0;}
+.erow .en{flex:1;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;min-width:0;}
+.erow .eh{font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.erow input{width:64px;font-size:17px;font-variant-numeric:tabular-nums;text-align:center;
+  border:1px solid var(--hair2);border-radius:4px;padding:9px 4px;font-family:var(--sans);background:#fff;color:var(--ink);}
+.erow input:focus{outline:2px solid var(--gold-pale);border-color:var(--gold);}
+.mrow{padding:10px 0;border-top:1px solid var(--hair);}
+.mrow:first-of-type{border-top:0;}
+.mrow .who{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:7px;gap:8px;}
+.btns{display:flex;gap:6px;flex-wrap:wrap;}
+.rbtn{flex:1;min-width:64px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+  border:1px solid var(--hair2);background:#fff;color:var(--mut);border-radius:4px;padding:10px 6px;cursor:pointer;}
+.rbtn.sel-red{border-color:var(--red);color:#fff;background:var(--red);}
+.rbtn.sel-blue{border-color:var(--blue);color:#fff;background:var(--blue);}
+.rbtn.sel-h{border-color:var(--navy);color:#fff;background:var(--navy);}
+.marg{display:flex;gap:6px;align-items:center;margin-top:7px;}
+.marg select{font-size:13px;padding:7px;border:1px solid var(--hair2);border-radius:4px;background:#fff;color:var(--ink);}
+.marg .ml{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);}
+.save-bar{position:sticky;bottom:0;background:var(--paper);padding:12px 0;border-top:1px solid var(--hair2);
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.btn-primary{font-family:var(--sans);font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+  background:var(--navy);color:#f4f1e8;border:none;border-radius:4px;padding:13px 22px;cursor:pointer;}
+.btn-quiet{font-family:var(--sans);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  background:none;border:1px solid var(--hair2);color:var(--mut);border-radius:4px;padding:11px 14px;cursor:pointer;}
+.saved-note{font-size:11px;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;font-weight:700;}
+.empty{color:var(--faint);text-align:center;padding:30px 10px;font-family:var(--serif);font-style:italic;font-size:15px;}
+
+@media(max-width:700px){
+  .days{grid-template-columns:repeat(2,1fr);}
+  .dy{border-left:0;border-top:1px solid var(--hair);}
+  .dy:nth-child(-n+2){border-top:0;}
+  .dy:nth-child(2n){border-left:1px solid var(--hair);}
+  .grps{grid-template-columns:1fr;}
+  .menu{grid-template-columns:1fr;gap:22px;}
+  .quart{grid-template-columns:repeat(2,1fr);}
+  .q:nth-child(3){border-left:0;}
+  .row{grid-template-columns:32px 1fr auto;grid-template-areas:"pos name b3" "pos meta b3";row-gap:2px;padding:11px 4px;}
+  .row.hd{display:none;}
+  .c-pos{grid-area:pos;}
+  .c-name{grid-area:name;}
+  .c-b3{grid-area:b3;font-size:22px;align-self:center;}
+  .c-rounds{grid-area:meta;font-size:11.5px;}
+  .c-rec,.c-nett{display:none;}
+  .crow{grid-template-columns:1fr 40px 46px 60px;}
+  .crow>div:nth-child(5){display:none;}
+}
+</style>
+</head>
+<body>
+<div class="chrome">
+  <div class="chrome-in">
+    <span class="brand">Not the <em>Ryder Cup</em></span>
+  </div>
+  <nav class="tabs" id="tabbar"></nav>
+  <div class="yrs" id="yearPills"></div>
+</div>
+<div class="wrap" id="view"></div>
+
+<script>
+"use strict";
+const BASE = {"2021": {"schemaVersion": 1, "year": 2021, "event": {"name": "Not the Ryder Cup", "venue": "Saunton Golf Club, North Devon"}, "courses": {}, "days": [{"day": 1, "date": "2021-09-16", "weekday": "Thu", "course": "West Course"}, {"day": 2, "date": "2021-09-17", "weekday": "Fri", "course": "West Course"}, {"day": 3, "date": "2021-09-18", "weekday": "Sat", "course": "East Course"}, {"day": 4, "date": "2021-09-19", "weekday": "Sun", "course": "East Course"}], "players": [{"id": "tom-pearson", "name": "Tom Pearson", "team": "RED", "startHcp": 7}, {"id": "john-pappachan", "name": "John Pappachan", "team": "RED", "startHcp": 33}, {"id": "indie-bilkhoo", "name": "Indie Bilkhoo", "team": "RED", "startHcp": 25}, {"id": "ian-bailey", "name": "Ian Bailey", "team": "RED", "startHcp": 10}, {"id": "simon-trundle", "name": "Simon Trundle", "team": "RED", "startHcp": 12}, {"id": "will-williams", "name": "Will Williams", "team": "RED", "startHcp": 22}, {"id": "gareth-jones", "name": "Gareth Jones", "team": "RED", "startHcp": 16}, {"id": "chris-wright", "name": "Chris Wright", "team": "RED", "startHcp": 25, "captain": true}, {"id": "paul-sutherland", "name": "Paul Sutherland", "team": "BLUE", "startHcp": 17, "captain": true}, {"id": "ben-maddison", "name": "Ben Maddison", "team": "BLUE", "startHcp": 7}, {"id": "justin-lawrence", "name": "Justin Lawrence", "team": "BLUE", "startHcp": 16}, {"id": "kevin-kiff", "name": "Kevin Kiff", "team": "BLUE", "startHcp": 18}, {"id": "bruce-rodda", "name": "Bruce Rodda", "team": "BLUE", "startHcp": 36}, {"id": "ed-breeze", "name": "Ed Breeze", "team": "BLUE", "startHcp": 28}, {"id": "al-hughes", "name": "Al Hughes", "team": "BLUE", "startHcp": 18}, {"id": "julian-legg", "name": "Julian Legg", "team": "BLUE", "startHcp": 18}], "dailyHcps": {"tom-pearson": [7, 7, 11, 11], "john-pappachan": [33, 32, 31, 31], "indie-bilkhoo": [25, 25, 21, 21], "ian-bailey": [10, 10, 11, 12], "simon-trundle": [12, 16, 16, 20], "will-williams": [22, 22, 21, 21], "gareth-jones": [16, 16, 16, 16], "chris-wright": [25, 21, 21, 21], "paul-sutherland": [17, 17, 16, 12], "ben-maddison": [7, 7, 9, 8], "justin-lawrence": [16, 15, 11, 13], "kevin-kiff": [18, 18, 14, 18], "bruce-rodda": [36, 36, 36, 32], "ed-breeze": [28, 28, 27, 23], "al-hughes": [18, 17, 21, 19], "julian-legg": [18, 18, 18, 22]}, "rounds": {"tom-pearson": [31, 26, 34, 39], "john-pappachan": [37, 37, 32, 30], "indie-bilkhoo": [32, 44, 36, 41], "ian-bailey": [34, 30, 30, 34], "simon-trundle": [22, 33, 23, 28], "will-williams": [34, 38, 35, 38], "gareth-jones": [34, 35, 35, 35], "chris-wright": [42, 32, 33, 37], "paul-sutherland": [34, 37, 42, 35], "ben-maddison": [34, 29, 37, 33], "justin-lawrence": [37, 41, 29, 31], "kevin-kiff": [33, 41, 27, 30], "bruce-rodda": [36, 33, 47, 36], "ed-breeze": [32, 37, 43, 39], "al-hughes": [38, 24, 39, 38], "julian-legg": [33, 31, 24, 34]}, "matches": [{"day": 1, "tee": "1340h", "format": "4ball", "singles": [{"red": "simon-trundle", "blue": "julian-legg", "result": {"red": 3, "blue": 4}}, {"red": "will-williams", "blue": "kevin-kiff", "result": {"red": "1up", "blue": null}}], "fourBBB": {"winner": "RED"}}, {"day": 1, "tee": "1350h", "format": "4ball", "singles": [{"red": "tom-pearson", "blue": "ed-breeze", "result": {"red": null, "blue": "1up"}}, {"red": "john-pappachan", "blue": "justin-lawrence", "result": {"red": 4, "blue": 2}}], "fourBBB": {"winner": "HALVED"}}, {"day": 1, "tee": "1400h", "format": "4ball", "singles": [{"red": "indie-bilkhoo", "blue": "ben-maddison", "result": {"red": null, "blue": "1up"}}, {"red": "ian-bailey", "blue": "paul-sutherland", "result": {"red": null, "blue": "1up"}}], "fourBBB": {"winner": "HALVED"}}, {"day": 1, "tee": "1410h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "al-hughes", "result": "AS"}, {"red": "chris-wright", "blue": "bruce-rodda", "result": {"red": 3, "blue": 1}}], "fourBBB": {"winner": "RED"}}, {"day": 2, "tee": "1050h", "format": "4ball", "singles": [{"red": "ian-bailey", "blue": "julian-legg", "result": {"red": 1, "blue": 2}}, {"red": "will-williams", "blue": "bruce-rodda", "result": {"red": 3, "blue": 1}}], "fourBBB": {"winner": "BLUE"}}, {"day": 2, "tee": "1100h", "format": "4ball", "singles": [{"red": "indie-bilkhoo", "blue": "kevin-kiff", "result": {"red": 6, "blue": 5}}, {"red": "gareth-jones", "blue": "ben-maddison", "result": {"red": 3, "blue": 1}}], "fourBBB": {"winner": "RED"}}, {"day": 2, "tee": "1110h", "format": "4ball", "singles": [{"red": "chris-wright", "blue": "al-hughes", "result": {"red": 6, "blue": 5}}, {"red": "tom-pearson", "blue": "ed-breeze", "result": {"red": null, "blue": "1up"}}], "fourBBB": {"winner": "BLUE"}}, {"day": 2, "tee": "1120h", "format": "4ball", "singles": [{"red": "john-pappachan", "blue": "paul-sutherland", "result": {"red": null, "blue": "1up"}}, {"red": "simon-trundle", "blue": "justin-lawrence", "result": {"red": 3, "blue": 4}}], "fourBBB": {"winner": "BLUE"}}, {"day": 3, "tee": "1000h", "format": "4ball", "singles": [{"red": "will-williams", "blue": "ed-breeze", "result": {"red": 5, "blue": 6}}, {"red": "indie-bilkhoo", "blue": "paul-sutherland", "result": {"red": 2, "blue": 4}}], "fourBBB": {"winner": "BLUE"}}, {"day": 3, "tee": "1010h", "format": "4ball", "singles": [{"red": "ian-bailey", "blue": "ben-maddison", "result": {"red": 5, "blue": 6}}, {"red": "tom-pearson", "blue": "julian-legg", "result": {"red": 4, "blue": 3}}], "fourBBB": {"winner": "BLUE"}}, {"day": 3, "tee": "1020h", "format": "4ball", "singles": [{"red": "chris-wright", "blue": "justin-lawrence", "result": {"red": null, "blue": "1up"}}, {"red": "simon-trundle", "blue": "al-hughes", "result": {"red": 4, "blue": 5}}], "fourBBB": {"winner": "BLUE"}}, {"day": 3, "tee": "1030h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "kevin-kiff", "result": {"red": 5, "blue": 4}}, {"red": "john-pappachan", "blue": "bruce-rodda", "result": {"red": 5, "blue": 6}}], "fourBBB": {"winner": "BLUE"}}, {"day": 4, "tee": "1100h", "format": "4ball", "singles": [{"red": "chris-wright", "blue": "paul-sutherland", "result": {"red": null, "blue": "2up"}}, {"red": "will-williams", "blue": "julian-legg", "result": {"red": "1up", "blue": null}}], "fourBBB": {"winner": "RED"}}, {"day": 4, "tee": "1110h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "ed-breeze", "result": {"red": 1, "blue": 2}}, {"red": "tom-pearson", "blue": "justin-lawrence", "result": {"red": 5, "blue": 4}}], "fourBBB": {"winner": "BLUE"}}, {"day": 4, "tee": "1120h", "format": "4ball", "singles": [{"red": "indie-bilkhoo", "blue": "al-hughes", "result": {"red": 2, "blue": 1}}, {"red": "ian-bailey", "blue": "kevin-kiff", "result": {"red": "2up", "blue": null}}], "fourBBB": {"winner": "RED"}}, {"day": 4, "tee": "1130h", "format": "4ball", "singles": [{"red": "john-pappachan", "blue": "ben-maddison", "result": {"red": null, "blue": "2up"}}, {"red": "simon-trundle", "blue": "bruce-rodda", "result": {"red": 3, "blue": 5}}], "fourBBB": {"winner": "RED"}}]}, "2022": {"schemaVersion": 1, "year": 2022, "event": {"name": "Not the Ryder Cup", "venue": "Saunton Golf Club, North Devon", "holdersBefore": "BLUE"}, "courses": {}, "days": [{"day": 1, "date": "2022-09-15", "weekday": "Thu", "course": "Saunton West Course"}, {"day": 2, "date": "2022-09-16", "weekday": "Fri", "course": "Saunton East Course"}, {"day": 3, "date": "2022-09-17", "weekday": "Sat", "course": "Ilfracombe Golf Club"}, {"day": 4, "date": "2022-09-18", "weekday": "Sun", "course": "Saunton West Course"}], "players": [{"id": "tom-pearson", "name": "Tom Pearson", "team": "RED", "startHcp": 13}, {"id": "john-pappachan", "name": "John Pappachan", "team": "RED", "startHcp": 34}, {"id": "bruce-fox", "name": "Bruce Fox", "team": "RED", "startHcp": 14}, {"id": "ian-bailey", "name": "Ian Bailey", "team": "RED", "startHcp": 15}, {"id": "simon-trundle", "name": "Simon Trundle", "team": "RED", "startHcp": 26}, {"id": "will-williams", "name": "Will Williams", "team": "RED", "startHcp": 21}, {"id": "gareth-jones", "name": "Gareth Jones", "team": "RED", "startHcp": 17}, {"id": "chris-wright", "name": "Chris Wright", "team": "RED", "startHcp": 22}, {"id": "paul-sutherland", "name": "Paul Sutherland", "team": "BLUE", "startHcp": 15}, {"id": "indie-bilkhoo", "name": "Indie Bilkhoo", "team": "BLUE", "startHcp": 21}, {"id": "justin-lawrence", "name": "Justin Lawrence", "team": "BLUE", "startHcp": 15}, {"id": "kevin-kiff", "name": "Kevin Kiff", "team": "BLUE", "startHcp": 20}, {"id": "bruce-rodda", "name": "Bruce Rodda", "team": "BLUE", "startHcp": 33}, {"id": "ed-breeze", "name": "Ed Breeze", "team": "BLUE", "startHcp": 25}, {"id": "al-hughes", "name": "Al Hughes", "team": "BLUE", "startHcp": 20}, {"id": "jon-powell", "name": "Jon Powell", "team": "BLUE", "startHcp": 18}], "dailyHcps": {"tom-pearson": [13, 9, 9, 9], "john-pappachan": [34, 34, 34, 34], "bruce-fox": [14, 14, 14, 14], "ian-bailey": [15, 11, 11, 11], "simon-trundle": [26, 26, 26, 26], "will-williams": [21, 21, 21, 21], "gareth-jones": [17, 16, 16, 16], "chris-wright": [22, 26, 26, 26], "paul-sutherland": [15, 17, 17, 16], "indie-bilkhoo": [21, 18, 20, 19], "justin-lawrence": [15, 13, 13, 13], "kevin-kiff": [20, 20, 20, 19], "bruce-rodda": [33, 33, 36, 32], "ed-breeze": [25, 24, 24, 25], "al-hughes": [20, 20, 22, 24], "jon-powell": [18, 22, 26, 29]}, "rounds": {"tom-pearson": [44, 33, 34, 41], "john-pappachan": [35, 35, 31, 31], "bruce-fox": [34, 31, 36, 31], "ian-bailey": [43, 32, 32, 34], "simon-trundle": [34, 31, 36, 39], "will-williams": [33, 36, 35, 29], "gareth-jones": [37, 32, 36, 37], "chris-wright": [27, 33, 34, 40], "paul-sutherland": [29, 33, 38, 39], "indie-bilkhoo": [40, 29, 38, 38], "justin-lawrence": [39, 36, 31, 33], "kevin-kiff": [33, 35, 37, 39], "bruce-rodda": [36, 28, 49, 27], "ed-breeze": [38, 31, 30, 33], "al-hughes": [34, 29, 29, 39], "jon-powell": [13, 25, 28, 25]}, "matches": [{"day": 1, "tee": "1130h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "paul-sutherland", "result": {"red": 4, "blue": 3}}, {"red": "bruce-fox", "blue": "jon-powell", "result": {"red": 6, "blue": 5}}], "fourBBB": {"winner": "RED"}}, {"day": 1, "tee": "1140h", "format": "4ball", "singles": [{"red": "john-pappachan", "blue": "kevin-kiff", "result": {"red": "2up", "blue": null}}, {"red": "chris-wright", "blue": "al-hughes", "result": {"red": 7, "blue": 8}}], "fourBBB": {"winner": "RED"}}, {"day": 1, "tee": "1150h", "format": "4ball", "singles": [{"red": "tom-pearson", "blue": "indie-bilkhoo", "result": {"red": 4, "blue": 2}}, {"red": "simon-trundle", "blue": "bruce-rodda", "result": "AS"}], "fourBBB": {"winner": "BLUE"}}, {"day": 1, "tee": "1200h", "format": "4ball", "singles": [{"red": "ian-bailey", "blue": "ed-breeze", "result": {"red": 4, "blue": 2}}, {"red": "will-williams", "blue": "justin-lawrence", "result": {"red": 2, "blue": 3}}], "fourBBB": {"winner": "BLUE"}}, {"day": 2, "tee": "1100h", "format": "4ball", "singles": [{"red": "john-pappachan", "blue": "justin-lawrence", "result": {"red": "1up", "blue": null}}, {"red": "ian-bailey", "blue": "jon-powell", "result": {"red": 3, "blue": 1}}], "fourBBB": {"winner": "RED"}}, {"day": 2, "tee": "1110h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "ed-breeze", "result": {"red": "1up", "blue": null}}, {"red": "will-williams", "blue": "paul-sutherland", "result": {"red": 3, "blue": 1}}], "fourBBB": {"winner": "RED"}}, {"day": 2, "tee": "1120h", "format": "4ball", "singles": [{"red": "bruce-fox", "blue": "bruce-rodda", "result": {"red": "2up", "blue": null}}, {"red": "simon-trundle", "blue": "kevin-kiff", "result": {"red": 1, "blue": 2}}], "fourBBB": {"winner": "BLUE"}}, {"day": 2, "tee": "1130h", "format": "4ball", "singles": [{"red": "tom-pearson", "blue": "al-hughes", "result": {"red": "1up", "blue": null}}, {"red": "chris-wright", "blue": "indie-bilkhoo", "result": {"red": "1up", "blue": null}}], "fourBBB": {"winner": "RED"}}, {"day": 3, "tee": "1128h", "format": "4ball", "singles": [{"red": "john-pappachan", "blue": "bruce-rodda", "result": {"red": 3, "blue": 5}}, {"red": "bruce-fox", "blue": "al-hughes", "result": {"red": 3, "blue": 2}}], "fourBBB": {"winner": "BLUE"}}, {"day": 3, "tee": "1138h", "format": "4ball", "singles": [{"red": "tom-pearson", "blue": "paul-sutherland", "result": {"red": 3, "blue": 4}}, {"red": "gareth-jones", "blue": "justin-lawrence", "result": {"red": 6, "blue": 4}}], "fourBBB": {"winner": "BLUE"}}, {"day": 3, "tee": "1148h", "format": "4ball", "singles": [{"red": "chris-wright", "blue": "kevin-kiff", "result": {"red": null, "blue": "1up"}}, {"red": "ian-bailey", "blue": "ed-breeze", "result": {"red": "1up", "blue": null}}], "fourBBB": {"winner": "RED"}}, {"day": 3, "tee": "1158h", "format": "4ball", "singles": [{"red": "simon-trundle", "blue": "jon-powell", "result": {"red": 6, "blue": 4}}, {"red": "will-williams", "blue": "indie-bilkhoo", "result": {"red": 3, "blue": 4}}], "fourBBB": {"winner": "BLUE"}}, {"day": 4, "tee": "1120h", "format": "4ball", "singles": [{"red": "chris-wright", "blue": "jon-powell", "result": {"red": 6, "blue": 5}}, {"red": "simon-trundle", "blue": "al-hughes", "result": "AS"}], "fourBBB": {"winner": "RED"}}, {"day": 4, "tee": "1130h", "format": "4ball", "singles": [{"red": "john-pappachan", "blue": "paul-sutherland", "result": {"red": 4, "blue": 5}}, {"red": "bruce-fox", "blue": "ed-breeze", "result": {"red": null, "blue": "1up"}}], "fourBBB": {"winner": "BLUE"}}, {"day": 4, "tee": "1140h", "format": "4ball", "singles": [{"red": "will-williams", "blue": "kevin-kiff", "result": {"red": 5, "blue": 6}}, {"red": "gareth-jones", "blue": "justin-lawrence", "result": {"red": 3, "blue": 1}}], "fourBBB": {"winner": "BLUE"}}, {"day": 4, "tee": "1150h", "format": "4ball", "singles": [{"red": "ian-bailey", "blue": "indie-bilkhoo", "result": {"red": 2, "blue": 3}}, {"red": "tom-pearson", "blue": "bruce-rodda", "result": {"red": 5, "blue": 4}}], "fourBBB": {"winner": "RED"}}]}, "2023": {"schemaVersion": 1, "year": 2023, "event": {"name": "Not the Ryder Cup", "venue": "Empordà Golf Resort", "holdersBefore": "RED"}, "courses": {}, "days": [{"day": 1, "date": "2023-09-14", "weekday": "Thu", "course": "Links Course"}, {"day": 2, "date": "2023-09-15", "weekday": "Fri", "course": "Forest Course"}, {"day": 3, "date": "2023-09-16", "weekday": "Sat", "course": "Links Course"}, {"day": 4, "date": "2023-09-17", "weekday": "Sun", "course": "Forest Course"}], "players": [{"id": "tom-pearson", "name": "Tom Pearson", "team": "RED", "startHcp": 8}, {"id": "john-pappachan", "name": "John Pappachan", "team": "RED", "startHcp": 37}, {"id": "andy-watson", "name": "Andy Watson", "team": "RED", "startHcp": 20}, {"id": "simon-trundle", "name": "Simon Trundle", "team": "RED", "startHcp": 27}, {"id": "will-williams", "name": "Will Williams", "team": "RED", "startHcp": 24}, {"id": "gareth-jones", "name": "Gareth Jones", "team": "RED", "startHcp": 17}, {"id": "justin-lawrence", "name": "Justin Lawrence", "team": "BLUE", "startHcp": 15}, {"id": "kevin-kiff", "name": "Kevin Kiff", "team": "BLUE", "startHcp": 20}, {"id": "bruce-rodda", "name": "Bruce Rodda", "team": "BLUE", "startHcp": 35}, {"id": "andy-macdowell", "name": "Andy MacDowell", "team": "BLUE", "startHcp": 31}, {"id": "al-hughes", "name": "Al Hughes", "team": "BLUE", "startHcp": 25}, {"id": "julian-legg", "name": "Julian Legg", "team": "BLUE", "startHcp": 25}], "dailyHcps": {"tom-pearson": [8, 8, 12, 10], "john-pappachan": [37, 37, 37, 41], "andy-watson": [20, 21, 21, 25], "simon-trundle": [27, 23, 17, 17], "will-williams": [24, 24, 24, 20], "gareth-jones": [17, 17, 17, 18], "justin-lawrence": [15, 19, 21, 17], "kevin-kiff": [20, 20, 18, 18], "bruce-rodda": [35, 34, 30, 29], "andy-macdowell": [31, 35, 39, 41], "al-hughes": [25, 25, 24, 20], "julian-legg": [25, 24, 20, 17]}, "rounds": {"tom-pearson": [35, 27, 39, 34], "john-pappachan": [33, 35, 27, 33], "andy-watson": [30, 32, 21, 40], "simon-trundle": [46, 50, 33, 41], "will-williams": [34, 35, 41, 31], "gareth-jones": [33, 32, 30, 37], "justin-lawrence": [23, 29, 42, 22], "kevin-kiff": [36, 39, 32, 39], "bruce-rodda": [37, 43, 37, 31], "andy-macdowell": [27, 25, 29, 31], "al-hughes": [36, 38, 42, 39], "julian-legg": [38, 41, 40, 36]}, "matches": [{"day": 1, "tee": "1000h", "format": "4ball", "singles": [{"red": "simon-trundle", "blue": "andy-macdowell", "result": {"red": 7, "blue": 6}}, {"red": "gareth-jones", "blue": "al-hughes", "result": {"red": "2up", "blue": null}}], "fourBBB": {"winner": "RED"}}, {"day": 1, "tee": "1010h", "format": "4ball", "singles": [{"red": "tom-pearson", "blue": "bruce-rodda", "result": {"red": "1up", "blue": null}}, {"red": "john-pappachan", "blue": "justin-lawrence", "result": {"red": 3, "blue": 2}}], "fourBBB": {"winner": "RED"}}, {"day": 1, "tee": "1020h", "format": "4ball", "singles": [{"red": "will-williams", "blue": "kevin-kiff", "result": "AS"}, {"red": "andy-watson", "blue": "julian-legg", "result": {"red": 1, "blue": 3}}], "fourBBB": {"winner": "BLUE"}}, {"day": 2, "tee": "1000h", "format": "4ball", "singles": [{"red": "simon-trundle", "blue": "kevin-kiff", "result": {"red": 4, "blue": 3}}, {"red": "andy-watson", "blue": "justin-lawrence", "result": {"red": null, "blue": "1up"}}], "fourBBB": {"winner": "RED"}}, {"day": 2, "tee": "1010h", "format": "4ball", "singles": [{"red": "john-pappachan", "blue": "andy-macdowell", "result": {"red": 4, "blue": 3}}, {"red": "tom-pearson", "blue": "al-hughes", "result": {"red": 3, "blue": 5}}], "fourBBB": {"winner": "BLUE"}}, {"day": 2, "tee": "1020h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "bruce-rodda", "result": {"red": 3, "blue": 4}}, {"red": "will-williams", "blue": "julian-legg", "result": {"red": 3, "blue": 4}}], "fourBBB": {"winner": "BLUE"}}, {"day": 3, "tee": "1212h", "format": "4ball", "singles": [{"red": "andy-watson", "blue": "andy-macdowell", "result": {"red": 3, "blue": 4}}, {"red": "tom-pearson", "blue": "julian-legg", "result": {"red": null, "blue": "1up"}}], "fourBBB": {"winner": "BLUE"}}, {"day": 3, "tee": "1222h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "kevin-kiff", "result": {"red": 1, "blue": 2}}, {"red": "john-pappachan", "blue": "al-hughes", "result": {"red": 5, "blue": 7}}], "fourBBB": {"winner": "BLUE"}}, {"day": 3, "tee": "1232h", "format": "4ball", "singles": [{"red": "will-williams", "blue": "justin-lawrence", "result": {"red": 1, "blue": 2}}, {"red": "simon-trundle", "blue": "bruce-rodda", "result": {"red": 1, "blue": 2}}], "fourBBB": {"winner": "BLUE"}}, {"day": 4, "tee": "0800h", "format": "4ball", "singles": [{"red": "simon-trundle", "blue": "al-hughes", "result": {"red": 2, "blue": 1}}, {"red": "gareth-jones", "blue": "julian-legg", "result": "AS"}], "fourBBB": {"winner": "RED"}}, {"day": 4, "tee": "0810h", "format": "4ball", "singles": [{"red": "tom-pearson", "blue": "kevin-kiff", "result": {"red": 2, "blue": 4}}, {"red": "john-pappachan", "blue": "bruce-rodda", "result": {"red": 1, "blue": 2}}], "fourBBB": {"winner": "BLUE"}}, {"day": 4, "tee": "0820h", "format": "4ball", "singles": [{"red": "andy-watson", "blue": "justin-lawrence", "result": {"red": 7, "blue": 6}}, {"red": "will-williams", "blue": "andy-macdowell", "result": {"red": 3, "blue": 4}}], "fourBBB": {"winner": "RED"}}]}, "2024": {"schemaVersion": 1, "year": 2024, "event": {"name": "Not the Ryder Cup", "venue": "Empordà Golf Resort", "holdersBefore": "BLUE"}, "courses": {}, "days": [{"day": 1, "date": "2024-09-12", "weekday": "Thu", "course": "Links Course"}, {"day": 2, "date": "2024-09-13", "weekday": "Fri", "course": "Forest Course"}, {"day": 3, "date": "2024-09-14", "weekday": "Sat", "course": "Links Course"}, {"day": 4, "date": "2024-09-15", "weekday": "Sun", "course": "Forest Course"}], "players": [{"id": "tom-pearson", "name": "Tom Pearson", "team": "RED", "startHcp": 12}, {"id": "chris-wright", "name": "Chris Wright", "team": "RED", "startHcp": 28}, {"id": "andy-watson", "name": "Andy Watson", "team": "RED", "startHcp": 27}, {"id": "simon-trundle", "name": "Simon Trundle", "team": "RED", "startHcp": 15}, {"id": "brian-davidson", "name": "Brian Davidson", "team": "RED", "startHcp": 17}, {"id": "gareth-jones", "name": "Gareth Jones", "team": "RED", "startHcp": 20}, {"id": "justin-lawrence", "name": "Justin Lawrence", "team": "BLUE", "startHcp": 25}, {"id": "kevin-kiff", "name": "Kevin Kiff", "team": "BLUE", "startHcp": 19}, {"id": "bruce-rodda", "name": "Bruce Rodda", "team": "BLUE", "startHcp": 31}, {"id": "andy-macdowell", "name": "Andy MacDowell", "team": "BLUE", "startHcp": 45}, {"id": "al-hughes", "name": "Al Hughes", "team": "BLUE", "startHcp": 21}, {"id": "mike-catling", "name": "Mike Catling", "team": "BLUE", "startHcp": 18}], "dailyHcps": {"tom-pearson": [12, 12, 16, 14], "chris-wright": [28, 29, 29, 32], "andy-watson": [27, 27, 27, 30], "simon-trundle": [15, 15, 19, 18], "brian-davidson": [17, 21, 25, 29], "gareth-jones": [20, 20, 20, 21], "justin-lawrence": [25, 21, 21, 24], "kevin-kiff": [19, 19, 21, 21], "bruce-rodda": [31, 31, 35, 38], "andy-macdowell": [45, 41, 41, 45], "al-hughes": [21, 23, 23, 23], "mike-catling": [18, 22, 26, 25]}, "rounds": {"tom-pearson": [31, 26, 39, 35], "chris-wright": [30, 32, 28, 39], "andy-watson": [34, 35, 28, 37], "simon-trundle": [33, 24, 37, 38], "brian-davidson": [22, 24, 25, 44], "gareth-jones": [32, 33, 30, 31], "justin-lawrence": [43, 33, 28, 43], "kevin-kiff": [33, 29, 34, 39], "bruce-rodda": [31, 22, 28, 38], "andy-macdowell": [41, 35, 21, 26], "al-hughes": [29, 35, 36, 37], "mike-catling": [21, 21, 37, 31]}, "matches": [{"day": 1, "tee": "1148h", "format": "4ball", "singles": [{"red": "tom-pearson", "blue": "justin-lawrence", "result": {"red": 3, "blue": 5}}, {"red": "brian-davidson", "blue": "andy-macdowell", "result": {"red": 4, "blue": 5}}], "fourBBB": {"winner": "BLUE"}}, {"day": 1, "tee": "1200h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "kevin-kiff", "result": {"red": 3, "blue": 4}}, {"red": "chris-wright", "blue": "bruce-rodda", "result": "AS"}], "fourBBB": {"winner": "BLUE"}}, {"day": 1, "tee": "1212h", "format": "4ball", "singles": [{"red": "simon-trundle", "blue": "al-hughes", "result": {"red": 2, "blue": 1}}, {"red": "andy-watson", "blue": "mike-catling", "result": {"red": 4, "blue": 3}}], "fourBBB": {"winner": "RED"}}, {"day": 2, "tee": "1000h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "justin-lawrence", "result": {"red": 2, "blue": 3}}, {"red": "simon-trundle", "blue": "bruce-rodda", "result": "AS"}], "fourBBB": {"winner": "HALVED"}}, {"day": 2, "tee": "1012h", "format": "4ball", "singles": [{"red": "tom-pearson", "blue": "al-hughes", "result": {"red": 1, "blue": 2}}, {"red": "chris-wright", "blue": "kevin-kiff", "result": {"red": 3, "blue": 2}}], "fourBBB": {"winner": "BLUE"}}, {"day": 2, "tee": "1024h", "format": "4ball", "singles": [{"red": "andy-watson", "blue": "andy-macdowell", "result": {"red": 3, "blue": 2}}, {"red": "brian-davidson", "blue": "mike-catling", "result": {"red": 4, "blue": 3}}], "fourBBB": {"winner": "RED"}}, {"day": 3, "tee": "1000h", "format": "4ball", "singles": [{"red": "chris-wright", "blue": "justin-lawrence", "result": "AS"}, {"red": "andy-watson", "blue": "kevin-kiff", "result": {"red": 3, "blue": 4}}], "fourBBB": {"winner": "BLUE"}}, {"day": 3, "tee": "1012h", "format": "4ball", "singles": [{"red": "tom-pearson", "blue": "bruce-rodda", "result": {"red": 5, "blue": 4}}, {"red": "gareth-jones", "blue": "mike-catling", "result": {"red": 6, "blue": 7}}], "fourBBB": {"winner": "BLUE"}}, {"day": 3, "tee": "1024h", "format": "4ball", "singles": [{"red": "simon-trundle", "blue": "andy-macdowell", "result": {"red": 6, "blue": 5}}, {"red": "brian-davidson", "blue": "al-hughes", "result": {"red": 2, "blue": 4}}], "fourBBB": {"winner": "BLUE"}}, {"day": 4, "tee": "1000h", "format": "4ball", "singles": [{"red": "brian-davidson", "blue": "justin-lawrence", "result": {"red": "1up", "blue": null}}, {"red": "chris-wright", "blue": "al-hughes", "result": {"red": 1, "blue": 2}}], "fourBBB": {"winner": "RED"}}, {"day": 4, "tee": "1012h", "format": "4ball", "singles": [{"red": "tom-pearson", "blue": "kevin-kiff", "result": {"red": 1, "blue": 2}}, {"red": "simon-trundle", "blue": "mike-catling", "result": {"red": 3, "blue": 1}}], "fourBBB": {"winner": "BLUE"}}, {"day": 4, "tee": "1024h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "andy-macdowell", "result": {"red": 4, "blue": 2}}, {"red": "andy-watson", "blue": "bruce-rodda", "result": {"red": 2, "blue": 3}}], "fourBBB": {"winner": "BLUE"}}]}, "2025": {"schemaVersion": 1, "year": 2025, "event": {"name": "Not the Ryder Cup", "venue": "Empordà Golf Resort", "holdersBefore": "BLUE"}, "courses": {"dunes": {"name": "Empordà Links (Dunes)", "holes": [{"hole": 1, "par": 4, "yards": 380, "si": 9}, {"hole": 2, "par": 4, "yards": 372, "si": 5}, {"hole": 3, "par": 3, "yards": 158, "si": 17}, {"hole": 4, "par": 4, "yards": 328, "si": 13}, {"hole": 5, "par": 4, "yards": 359, "si": 7}, {"hole": 6, "par": 3, "yards": 168, "si": 15}, {"hole": 7, "par": 4, "yards": 391, "si": 11}, {"hole": 8, "par": 5, "yards": 546, "si": 1}, {"hole": 9, "par": 4, "yards": 380, "si": 3}, {"hole": 10, "par": 4, "yards": 330, "si": 16}, {"hole": 11, "par": 3, "yards": 164, "si": 14}, {"hole": 12, "par": 5, "yards": 535, "si": 8}, {"hole": 13, "par": 4, "yards": 364, "si": 10}, {"hole": 14, "par": 4, "yards": 391, "si": 4}, {"hole": 15, "par": 3, "yards": 148, "si": 18}, {"hole": 16, "par": 4, "yards": 387, "si": 6}, {"hole": 17, "par": 4, "yards": 398, "si": 2}, {"hole": 18, "par": 5, "yards": 505, "si": 12}]}, "forest": {"name": "Empordà Forest", "holes": [{"hole": 1, "par": 4, "yards": 364, "si": 7}, {"hole": 2, "par": 3, "yards": 165, "si": 15}, {"hole": 3, "par": 4, "yards": 379, "si": 5}, {"hole": 4, "par": 5, "yards": 498, "si": 9}, {"hole": 5, "par": 3, "yards": 152, "si": 17}, {"hole": 6, "par": 4, "yards": 292, "si": 11}, {"hole": 7, "par": 5, "yards": 566, "si": 1}, {"hole": 8, "par": 3, "yards": 171, "si": 13}, {"hole": 9, "par": 5, "yards": 491, "si": 3}, {"hole": 10, "par": 5, "yards": 479, "si": 8}, {"hole": 11, "par": 4, "yards": 309, "si": 14}, {"hole": 12, "par": 3, "yards": 171, "si": 18}, {"hole": 13, "par": 5, "yards": 485, "si": 4}, {"hole": 14, "par": 3, "yards": 158, "si": 16}, {"hole": 15, "par": 4, "yards": 335, "si": 12}, {"hole": 16, "par": 4, "yards": 377, "si": 6}, {"hole": 17, "par": 4, "yards": 363, "si": 10}, {"hole": 18, "par": 4, "yards": 410, "si": 2}]}}, "days": [{"day": 1, "date": "2025-09-25", "weekday": "Thu", "course": "dunes"}, {"day": 2, "date": "2025-09-26", "weekday": "Fri", "course": "forest"}, {"day": 3, "date": "2025-09-27", "weekday": "Sat", "course": "dunes"}, {"day": 4, "date": "2025-09-28", "weekday": "Sun", "course": "forest"}], "players": [{"id": "tom-pearson", "name": "Tom Pearson", "team": "RED", "startHcp": 17}, {"id": "chris-wright", "name": "Chris Wright", "team": "RED", "startHcp": 33}, {"id": "andy-watson", "name": "Andy Watson", "team": "RED", "startHcp": 30}, {"id": "simon-trundle", "name": "Simon Trundle", "team": "RED", "startHcp": 20}, {"id": "will-williams", "name": "Will Williams", "team": "RED", "startHcp": 24}, {"id": "gareth-jones", "name": "Gareth Jones", "team": "RED", "startHcp": 25}, {"id": "bruce-fox", "name": "Bruce Fox", "team": "RED", "startHcp": 17}, {"id": "brian-davidson", "name": "Brian Davidson", "team": "BLUE", "startHcp": 30}, {"id": "justin-lawrence", "name": "Justin Lawrence", "team": "BLUE", "startHcp": 22}, {"id": "kevin-kiff", "name": "Kevin Kiff", "team": "BLUE", "startHcp": 22}, {"id": "andy-macdowell", "name": "Andy MacDowell", "team": "BLUE", "startHcp": 48}, {"id": "al-hughes", "name": "Al Hughes", "team": "BLUE", "startHcp": 24}, {"id": "indie-bilkhoo", "name": "Indie Bilkhoo", "team": "BLUE", "startHcp": 19}, {"id": "eddie-fox", "name": "Eddie Fox", "team": "BLUE", "startHcp": 4}], "rounds": {"tom-pearson": [45, 39, 42, 38], "chris-wright": [26, 35, 43, 34], "andy-watson": [28, 37, 34, 37], "simon-trundle": [39, 39, 30, 39], "will-williams": [22, 33, 28, 29], "gareth-jones": [41, 37, 39, 34], "bruce-fox": [36, 37, 32, 37], "brian-davidson": [44, 36, 30, 37], "justin-lawrence": [44, 23, 42, 37], "kevin-kiff": [41, 41, 29, 30], "andy-macdowell": [42, 32, 29, 43], "al-hughes": [40, 32, 35, 42], "indie-bilkhoo": [48, 29, 36, 34], "eddie-fox": [20, 28, 33, 28]}, "matches": [{"day": 1, "tee": "1000h", "format": "2ball", "singles": [{"red": "simon-trundle", "blue": "kevin-kiff", "result": "AS"}], "fourBBB": null}, {"day": 1, "tee": "1010h", "format": "4ball", "singles": [{"red": "will-williams", "blue": "andy-macdowell", "result": {"red": 3, "blue": 5}}, {"red": "bruce-fox", "blue": "eddie-fox", "result": {"red": 6, "blue": 4}}], "fourBBB": {"winner": "BLUE"}}, {"day": 1, "tee": "1020h", "format": "4ball", "singles": [{"red": "chris-wright", "blue": "justin-lawrence", "result": {"red": 6, "blue": 8}}, {"red": "andy-watson", "blue": "brian-davidson", "result": {"red": 7, "blue": 8}}], "fourBBB": {"winner": "BLUE"}}, {"day": 1, "tee": "1030h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "al-hughes", "result": {"red": 2, "blue": 3}}, {"red": "tom-pearson", "blue": "indie-bilkhoo", "result": "AS"}], "fourBBB": {"winner": "HALVED"}}, {"day": 2, "tee": "1010h", "format": "2ball", "singles": [{"red": "chris-wright", "blue": "indie-bilkhoo", "result": {"red": 3, "blue": 2}}], "fourBBB": null}, {"day": 2, "tee": "1020h", "format": "4ball", "singles": [{"red": "bruce-fox", "blue": "brian-davidson", "result": {"red": 3, "blue": 1}}, {"red": "gareth-jones", "blue": "andy-macdowell", "result": "AS"}], "fourBBB": {"winner": "RED"}}, {"day": 2, "tee": "1030h", "format": "4ball", "singles": [{"red": "andy-watson", "blue": "eddie-fox", "result": {"red": 2, "blue": 1}}, {"red": "tom-pearson", "blue": "kevin-kiff", "result": {"red": null, "blue": "1up"}}], "fourBBB": {"winner": "BLUE"}}, {"day": 2, "tee": "1040h", "format": "4ball", "singles": [{"red": "will-williams", "blue": "justin-lawrence", "result": {"red": 3, "blue": 2}}, {"red": "simon-trundle", "blue": "al-hughes", "result": {"red": 3, "blue": 1}}], "fourBBB": {"winner": "RED"}}, {"day": 3, "tee": "1000h", "format": "2ball", "singles": [{"red": "andy-watson", "blue": "al-hughes", "result": {"red": 3, "blue": 2}}], "fourBBB": null}, {"day": 3, "tee": "1010h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "kevin-kiff", "result": {"red": 4, "blue": 3}}, {"red": "chris-wright", "blue": "andy-macdowell", "result": {"red": 6, "blue": 5}}], "fourBBB": {"winner": "RED"}}, {"day": 3, "tee": "1020h", "format": "4ball", "singles": [{"red": "tom-pearson", "blue": "eddie-fox", "result": {"red": 7, "blue": 5}}, {"red": "simon-trundle", "blue": "brian-davidson", "result": {"red": 1, "blue": 3}}], "fourBBB": {"winner": "RED"}}, {"day": 3, "tee": "1030h", "format": "4ball", "singles": [{"red": "will-williams", "blue": "indie-bilkhoo", "result": {"red": 3, "blue": 4}}, {"red": "bruce-fox", "blue": "justin-lawrence", "result": {"red": 2, "blue": 3}}], "fourBBB": {"winner": "BLUE"}}, {"day": 4, "tee": "0830h", "format": "2ball", "singles": [{"red": "will-williams", "blue": "eddie-fox", "result": {"red": "1up", "blue": null}}], "fourBBB": null}, {"day": 4, "tee": "0840h", "format": "4ball", "singles": [{"red": "bruce-fox", "blue": "kevin-kiff", "result": {"red": 3, "blue": 2}}, {"red": "chris-wright", "blue": "al-hughes", "result": {"red": 2, "blue": 3}}], "fourBBB": {"winner": "HALVED"}}, {"day": 4, "tee": "0850h", "format": "4ball", "singles": [{"red": "andy-watson", "blue": "andy-macdowell", "result": {"red": 1, "blue": 3}}, {"red": "tom-pearson", "blue": "justin-lawrence", "result": {"red": null, "blue": "1up"}}], "fourBBB": {"winner": "HALVED"}}, {"day": 4, "tee": "0900h", "format": "4ball", "singles": [{"red": "gareth-jones", "blue": "brian-davidson", "result": {"red": 2, "blue": 4}}, {"red": "simon-trundle", "blue": "indie-bilkhoo", "result": {"red": 3, "blue": 1}}], "fourBBB": {"winner": "BLUE"}}]}};
+const LEGACY = {"schemaVersion": 1, "note": "Pre-2021 tour history. Detailed records only exist from 2021 (Justin took over the stats); before that a basic notes app held daily individual scores only. Star counts in each workbook are the authoritative career ledgers, maintained by Justin: LEADERBOARD team stars = actual NTRC trophy wins since the tour began; Individual Results name stars = career Tourist Trophy wins. Latest file wins where files disagree (some years' stars were updated late).", "tourNumbering": {"2026": 11, "2025": 10, "toursThrough2025": 10, "pre2021Tours": 6, "skippedYear": "one year skipped (likely 2020) — confirmed by Justin 23 Jul 2026; exact Tour 1 year still unconfirmed", "firstYearUnconfirmed": true}, "trophyTally": {"asOf": 2025, "BLUE": 8, "RED": 2, "source": "Justin (23 Jul 2026) + 2025 workbook LEADERBOARD stars (2 v 8)", "notes": "2025's 20-20 retain counts to Blue's tally. Red's only win in the recorded era: Saunton 2022."}, "careerTouristTrophyWins": {"asOf": 2025, "tom-pearson": {"wins": 4, "recordedEra": [2022, 2025], "pre2021": 2}, "justin-lawrence": {"wins": 2, "recordedEra": [2024], "pre2021": 1}, "indie-bilkhoo": {"wins": 2, "recordedEra": [2021], "pre2021": 1}, "simon-trundle": {"wins": 1, "recordedEra": [2023], "pre2021": 0}, "john-pappachan": {"wins": 1, "recordedEra": [], "pre2021": 1}, "ed-breeze": {"wins": 1, "recordedEra": [], "pre2021": 1}}, "openQuestions": ["Kevin Kiff shows 1 star in the 2023 file only (none in 2022/2024/2025) — genuine pre-2021 TT win dropped later, or a 2023 entry slip? Justin unsure (23 Jul 2026) — will check with the group. Until resolved: 'subject to committee inquiry'.", "Which year was Tour 1? (One year skipped en route — likely 2020.)"]};
+const READONLY = true;   // team edition: view everything, edit nothing
+const BUILD = "2026-07-24 00:41";
+
+/* ---------- state ---------- */
+const LS = "ntrc.override.v1";
+let override = {};
+if (!READONLY) { try { override = JSON.parse(localStorage.getItem(LS) || "{}"); } catch(e) {} }
+const DATA = {};
+function rebuildData(){
+  for (const k of Object.keys(DATA)) delete DATA[k];
+  for (const [y, d] of Object.entries(BASE)) DATA[y] = JSON.parse(JSON.stringify(d));
+  for (const [y, d] of Object.entries(override)) DATA[y] = d;
+}
+rebuildData();
+/* history is SEALED: tours before 2026 are read-only — the record book must never change. */
+const EDIT_FROM = 2026;
+const sealed = y => +y < EDIT_FROM;
+{ let mig=false;
+  for (const k of Object.keys(override)) if (sealed(k)) { delete override[k]; mig=true; }
+  if (mig){ localStorage.setItem(LS, JSON.stringify(override)); rebuildData(); } }
+let curYear = Object.keys(DATA).sort().slice(-1)[0];
+let curTab = "board";
+let entryDay = 1;
+const TABS_ALL = [["board","Board"],["match","Match Play"],["trophy","Trophy"],["ammo","Ammunition"],["players","Players"],["records","Records"],["setup","Setup"],["draw","Draw"],["enter","Enter"]];
+const TABS = READONLY ? TABS_ALL.filter(([k])=>!["setup","draw","enter"].includes(k)) : TABS_ALL;
+/* team edition: pull the freshest published data if we're hosted */
+if (READONLY && location.protocol.indexOf("http")===0){
+  fetch("data.json?t="+Date.now()).then(r=>r.ok?r.json():null).then(j=>{
+    if (!j) return;
+    let got=false;
+    Object.keys(j).forEach(k=>{ if(/^\d{4}$/.test(k) && j[k]){ BASE[k]=j[k]; got=true; } });
+    if (got){ rebuildData(); render(); }
+  }).catch(()=>{});
+}
+
+/* ---------- engine ---------- */
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const half = v => { const w = Math.trunc(v); const f = Math.abs(v-w) >= .25 ? "½" : ""; return (w||!f) ? w+f : f; };
+function P(y){ const o={}; DATA[y].players.forEach(p=>o[p.id]=p); return o; }
+const nm = (y,i)=>P(y)[i] ? P(y)[i].name : i;
+const sur = (y,i)=>nm(y,i).split(" ").slice(-1)[0];
+const tmOf = (y,i)=>P(y)[i] ? P(y)[i].team : "";
+function marginOf(v){
+  if (v==null) return null;
+  const s = String(v).trim().toLowerCase();
+  if (s==="" || s==="a/s" || s==="as") return null;
+  const m = s.match(/^\d+/); return m ? parseInt(m[0]) : null;
+}
+function decide(s){
+  const r = s.result;
+  if (r==null) return {w:null, note:""};
+  if (r==="AS") return {w:"HALVED", note:"A/S"};
+  const me = marginOf(r.red), mg = marginOf(r.blue);
+  if (me==null && mg==null) return {w:null, note:""};
+  const R = me==null ? -1 : me, B = mg==null ? -1 : mg;
+  if (R===B) return {w:"HALVED", note:"A/S"};
+  const w = R>B ? "RED":"BLUE", up = Math.max(R,B), tp = Math.min(R,B);
+  return {w, note: tp<0 ? up+" up" : up+"&"+tp};
+}
+function dayScores(y){
+  const d = DATA[y]; const out = {};
+  d.days.forEach(x=>out[x.day]={RED:0,BLUE:0,meta:x});
+  let halved=0;
+  for (const m of d.matches){
+    for (const s of m.singles){
+      const {w} = decide(s);
+      if (w==="HALVED"){ out[m.day].RED+=.5; out[m.day].BLUE+=.5; halved++; }
+      else if (w) out[m.day][w]+=1;
+    }
+    if (m.fourBBB){
+      const w = m.fourBBB.winner;
+      if (w==="HALVED"){ out[m.day].RED+=.5; out[m.day].BLUE+=.5; }
+      else if (w) out[m.day][w]+=1;
+    }
+  }
+  let R=0,B=0; Object.values(out).forEach(x=>{R+=x.RED;B+=x.BLUE;});
+  return {days:out, red:R, blue:B, halved};
+}
+const played = (y,i)=>(DATA[y].rounds[i]||[]).filter(x=>typeof x==="number");
+function best3(y,i){ const v=played(y,i); if(!v.length) return 0;
+  return v.length>=3 ? v.reduce((a,b)=>a+b,0)-Math.min(...v) : v.reduce((a,b)=>a+b,0); }
+function ttOrder(y){
+  return Object.keys(DATA[y].rounds).sort((a,b)=> best3(y,b)-best3(y,a) || nm(y,a).localeCompare(nm(y,b)));
+}
+function ttRanks(y){
+  const ord = ttOrder(y); const ranks={}, tie={};
+  let prev=null, pr=0;
+  ord.forEach((i,ix)=>{ const b=best3(y,i); if(b!==prev){pr=ix+1;prev=b;} ranks[i]=pr; tie[pr]=(tie[pr]||0)+1; });
+  return {ord, ranks, tie};
+}
+function hcpAdj(s){ if(s<=27)return 4; if(s===28)return 3; if(s===29)return 2; if(s===30)return 1;
+  if(s<=36)return 0; if(s<=38)return -1; if(s===39)return -2; if(s===40)return -3; return -4; }
+function dailyHcps(y,i){
+  const d = DATA[y];
+  if (d.dailyHcps && d.dailyHcps[i]) return d.dailyHcps[i];
+  const h=[P(y)[i].startHcp];
+  for(let k=0;k<3;k++){ const s=d.rounds[i][k];
+    h.push(h[h.length-1] + (typeof s==="number" ? hcpAdj(s) : 0)); }
+  return h;
+}
+function ttCareerWins(pid, uptoYear){
+  const leg = (LEGACY.careerTouristTrophyWins||{})[pid];
+  let n = leg ? (leg.pre2021||0) : 0;
+  const legEra = leg ? (leg.recordedEra||[]) : [];
+  for (const y of Object.keys(BASE)) {
+    if (+y > uptoYear) continue;
+    const {ord} = ttRanks(y);
+    if (ord.length && ord[0]===pid && played(y,ord[0]).length) n++;
+  }
+  // avoid double count: legacy recordedEra already covered by loop; pre2021 added once. legEra unused.
+  return n;
+}
+function starStr(n){ return n>0 ? " <span class=\"stars\">"+"★".repeat(Math.min(n,6))+"</span>" : ""; }
+function capBadge(y,i){ const p=P(y)[i]; return p&&p.captain ? ' <span class="capb">C</span>' : ""; }
+const cName = c => c ? String(c).replace(/\b\w/g,m=>m.toUpperCase()) : "Course TBC";
+
+/* ---------- pre-tour form guide (banter before a ball is struck) ---------- */
+function previewAwards(y){
+  const d=DATA[y];
+  const party=d.players;
+  if (!party.length) return [];
+  const A=[];
+  const ids=party.map(p=>p.id);
+  const C={}; ids.forEach(i=>{ try{ C[i]=careerOf(i); }catch(e){ C[i]=null; } });
+  const who=i=>"who-"+(party.find(p=>p.id===i)||{team:"RED"}).team.toLowerCase();
+  const names={}; party.forEach(p=>names[p.id]=p.name);
+  const snm=i=>String(names[i]||i).split(" ").slice(-1)[0];
+  const prevY=String(+y-1);
+  // defending champion
+  if (DATA[prevY]){
+    const po=ttOrder(prevY);
+    if (po.length && ids.includes(po[0])){
+      const cw=ttCareerWins(po[0],+prevY);
+      A.push(["Defending Champion", names[po[0]], who(po[0]),
+        best3(prevY,po[0])+" points last year · chasing title no. "+(cw+1),
+        "Everyone smiles at him on the range. Nobody means it."]);
+    }
+    const sp=po[po.length-1];
+    if (po.length>1 && ids.includes(sp))
+      A.push(["Reigning Wooden Spoon", names[sp], who(sp),
+        best3(prevY,sp)+" points last year · the title nobody defends on purpose",
+        "The kitchen drawer awaits its rightful owner."]);
+  }
+  // bookies' favourite: career titles then best average finish
+  const fav=ids.slice().sort((a,b)=>{
+    const t=ttCareerWins(b,+y-1)-ttCareerWins(a,+y-1); if(t) return t;
+    const av=i=>{const f=(C[i]&&C[i].finishes)||[]; return f.length?f.reduce((s,x2)=>s+x2.total,0)/f.length:0;};
+    return av(b)-av(a); })[0];
+  if (fav) A.push(["The Bookies’ Favourite", names[fav], who(fav),
+    ttCareerWins(fav,+y-1)+" career titles",
+    "The handicap committee has him under 24-hour surveillance."]);
+  // captain v captain
+  const cR=party.find(p=>p.captain&&p.team==="RED"), cB=party.find(p=>p.captain&&p.team==="BLUE");
+  if (cR&&cB){
+    let w=0,h=0,l=0;
+    Object.keys(BASE).forEach(yy=>BASE[yy].matches.forEach(m=>m.singles.forEach(s=>{
+      const pair=[s.red,s.blue];
+      if (pair.includes(cR.id)&&pair.includes(cB.id)){
+        const {w:ww}=decide(s); if(!ww)return;
+        if (ww==="HALVED") h++;
+        else { const win=ww==="RED"?s.red:s.blue; if(win===cR.id)w++; else l++; }
+      }})));
+    A.push(["Captain v Captain", esc(cR.name)+" v "+esc(cB.name), "who-plain",
+      (w+h+l)?("Head-to-head: "+cR.name.split(" ").slice(-1)[0]+" "+w+"-"+h+"-"+l):"Never drawn together in the recorded era",
+      "Two armbands. One dinner table. No survivors."]);
+  }
+  // grudge to watch: most-met cross-team pair in the party
+  const meets={};
+  Object.keys(BASE).forEach(yy=>BASE[yy].matches.forEach(m=>m.singles.forEach(s=>{
+    if (ids.includes(s.red)&&ids.includes(s.blue)){
+      const k=[s.red,s.blue].sort().join("|");
+      const e=meets[k]=meets[k]||{n:0,a:0,b:0,h:0};
+      e.n++;
+      const {w:ww}=decide(s); if(!ww)return;
+      if (ww==="HALVED")e.h++;
+      else { const win=ww==="RED"?s.red:s.blue; if(win===k.split("|")[0])e.a++; else e.b++; }
+    }})));
+  const xteam=(a,b)=> (party.find(p=>p.id===a)||{}).team !== (party.find(p=>p.id===b)||{}).team;
+  const grudges=Object.entries(meets).filter(([k])=>{const [a,b]=k.split("|");return xteam(a,b);})
+    .sort((a,b)=>b[1].n-a[1].n);
+  if (grudges.length){
+    const [k,v]=grudges[0]; const [a,b]=k.split("|");
+    A.push(["The Grudge Match We Demand", esc(snm(a))+" v "+esc(snm(b)), "who-plain",
+      v.n+" career meetings · "+snm(a)+" leads "+v.a+"-"+v.h+"-"+v.b,
+      "Chapter "+["","I","II","III","IV","V","VI","VII","VIII"][v.n+1]+". The hat owes us this one."]);
+  }
+  const fresh=[]; // never-met cross-team pairs
+  party.filter(p=>p.team==="RED").forEach(r2=>party.filter(p=>p.team==="BLUE").forEach(b2=>{
+    const k=[r2.id,b2.id].sort().join("|");
+    if (!meets[k]) fresh.push([r2,b2]);
+  }));
+  if (fresh.length)
+    A.push(["Strangers on the Tee", fresh.length+" pairings never drawn", "who-plain",
+      "Including "+esc(fresh[0][0].name.split(" ").slice(-1)[0])+" v "+esc(fresh[0][1].name.split(" ").slice(-1)[0]),
+      "Five years of golf and some of these men have never had the pleasure. The generator knows."]);
+  // bandit alert: highest start hcp in party
+  const bandit=party.slice().sort((a,b)=>(b.startHcp||0)-(a.startHcp||0))[0];
+  if (bandit) A.push(["Pre-Tour Bandit Alert", bandit.name, who(bandit.id),
+    "Arrives armed with "+bandit.startHcp+" shots",
+    "Declare him at customs."]);
+  // the drought: most tours, zero titles
+  const past=i=>(C[i]?C[i].yrs.filter(yy=>+yy<+y).length:0);
+  const dry=ids.filter(i=>ttCareerWins(i,+y-1)===0&&past(i)>0)
+    .sort((a,b)=>past(b)-past(a))[0];
+  if (dry){
+    const extra = dry==="kevin-kiff" ? " (allegedly one — the inquiry continues)" : "";
+    A.push(["The Drought", names[dry], who(dry),
+      past(dry)+" tours · 0 titles"+extra,
+      "Surely this year. (They said that last year.)"]);
+  }
+  // hot & cold: active singles streaks entering the tour
+  function streak(i){
+    const ms=(C[i]&&C[i].matches||[]).filter(m=>m.res);
+    let k2=ms.length-1, r=null, n=0;
+    while(k2>=0){ const x2=ms[k2].res; if(x2==="H")break; if(r===null)r=x2; if(ms[k2].res!==r)break; n++; k2--; }
+    return {r,n};
+  }
+  const hot=ids.map(i=>({i,...streak(i)})).filter(s=>s.r==="W"&&s.n>=2).sort((a,b)=>b.n-a.n)[0];
+  const cold=ids.map(i=>({i,...streak(i)})).filter(s=>s.r==="L"&&s.n>=2).sort((a,b)=>b.n-a.n)[0];
+  if (hot) A.push(["Arrives in Form", names[hot.i], who(hot.i),
+    hot.n+" singles wins on the spin", "Somebody check his bag for a second driver."]);
+  if (cold) A.push(["Arrives in Pieces", names[cold.i], who(cold.i),
+    cold.n+" singles defeats on the spin", "The physio can't help with what's wrong here."]);
+  // rookies
+  const rooks=party.filter(p=>p.ringer||!C[p.id]||!C[p.id].yrs.length);
+  if (rooks.length)
+    A.push(["The Unknown Quantity", rooks.map(p=>esc(p.name)).join(" &amp; "), "who-plain",
+      "No recorded form whatsoever", "No data. No fear. No idea what's coming, in either direction."]);
+  // the ninth star
+  A.push(["The Ninth Star", "Team Blue", "who-blue",
+    LEGACY.trophyTally.BLUE+"–"+LEGACY.trophyTally.RED+" and holders — Red must take it off them",
+    "The empire plans another jubilee. Red plan an uprising."]);
+  return A;
+}
+
+/* ---------- awards ---------- */
+function awards(y){
+  const d = DATA[y];
+  const ids = Object.keys(d.rounds);
+  const done = ids.filter(i=>played(y,i).length>=1);
+  if (!done.length) return (+y>=EDIT_FROM) ? previewAwards(y) : [];
+  const A = [];
+  const wd = {}; d.days.forEach(x=>wd[x.day]=x.weekday||("D"+x.day));
+  const {ord, ranks} = ttRanks(y);
+  const champ = ord[0], spoon = ord[ord.length-1], brides = ord[1];
+  const full = ids.every(i=>played(y,i).length===d.days.length);
+
+  const rec={}, bbbP={}, recd={};
+  ids.forEach(i=>{rec[i]=[0,0,0]; bbbP[i]=0; recd[i]=0;});
+  let bestWin=null, bigConcede=null;
+  const meets={};
+  for (const m of d.matches){
+    const reds=m.singles.map(s=>s.red), blues=m.singles.map(s=>s.blue);
+    for (const s of m.singles){
+      const {w, note} = decide(s);
+      if (!w) continue;
+      const key=[s.red,s.blue].sort().join("|");
+      (meets[key]=meets[key]||[]).push(m.day);
+      if (w==="HALVED"){ rec[s.red][1]++; rec[s.blue][1]++; }
+      else {
+        const win = w==="RED"?s.red:s.blue, lose = w==="RED"?s.blue:s.red;
+        rec[win][0]++; rec[lose][2]++;
+        const up=Math.max(marginOf(s.result.red)??-1, marginOf(s.result.blue)??-1);
+        const tp=Math.min(marginOf(s.result.red)??-1, marginOf(s.result.blue)??-1);
+        if(!bestWin || up>bestWin.up || (up===bestWin.up && Math.max(tp,0)>Math.max(bestWin.tp,0)))
+          bestWin={up,tp,win,lose,day:m.day,note};
+      }
+      const hr=dailyHcps(y,s.red)[m.day-1], hb=dailyHcps(y,s.blue)[m.day-1];
+      if (typeof hr==="number" && typeof hb==="number"){
+        const shots=Math.abs(hr-hb);
+        const taker=hr>hb?s.red:s.blue, giver=hr>hb?s.blue:s.red;
+        recd[taker]+=shots;
+        if(!bigConcede || shots>bigConcede.shots){
+          let out="match halved";
+          if (w!=="HALVED"){ const wid=w==="RED"?s.red:s.blue;
+            out=(wid===giver?"and still won ":"and still lost ")+note; }
+          bigConcede={shots,giver,taker,day:m.day,out};
+        }
+      }
+    }
+    if (m.fourBBB){
+      const w=m.fourBBB.winner;
+      const winners = w==="RED"?reds : w==="BLUE"?blues : reds.concat(blues);
+      new Set(winners).forEach(i=>bbbP[i]+= w==="HALVED"?.5:1);
+    }
+  }
+  const sgl={}; ids.forEach(i=>sgl[i]=rec[i][0]+.5*rec[i][1]);
+  const who = i=>"who-"+tmOf(y,i).toLowerCase();
+  const rstr = i=>(d.rounds[i]||[]).map(x=>typeof x==="number"?x:"–").join(" · ");
+
+  if (full){
+    A.push(["The Wooden Spoon", nm(y,spoon), who(spoon),
+      best3(y,spoon)+" points · last of "+ord.length,
+      "Four days of graft. Zero sympathy at this table."]);
+    A.push(["The Bridesmaid", nm(y,brides), who(brides),
+      best3(y,brides)+" points · "+(best3(y,champ)-best3(y,brides))+" short of the trophy",
+      "Always gives the speech. Never lifts the silverware."]);
+  }
+  let crash=null,surge=null;
+  ids.forEach(i=>{ const r=d.rounds[i];
+    for(let k=1;k<r.length;k++){ if(typeof r[k]==="number"&&typeof r[k-1]==="number"){
+      const dl=r[k]-r[k-1];
+      if(!crash||dl<crash.dl)crash={dl,i,k}; if(!surge||dl>surge.dl)surge={dl,i,k}; }}});
+  if (crash && surge && crash.dl<0 && surge.dl>0){
+    if (crash.i===surge.i)
+      A.push(["The Jekyll &amp; Hyde", nm(y,crash.i), who(crash.i), "Rounds of "+rstr(crash.i),
+        "Two entirely different golfers share this award. They have never been seen in the same room."]);
+    else {
+      A.push(["The Overnight Collapse", nm(y,crash.i), who(crash.i),
+        d.rounds[crash.i][crash.k-1]+" then "+d.rounds[crash.i][crash.k]+" ("+(crash.dl>0?"+":"")+crash.dl+")",
+        "Slept on a lead. Woke up without one."]);
+      A.push(["The Lazarus", nm(y,surge.i), who(surge.i),
+        d.rounds[surge.i][surge.k-1]+" to "+d.rounds[surge.i][surge.k]+" overnight (+"+surge.dl+")",
+        "Reports of this golf game's death were greatly exaggerated."]);
+    }
+  }
+  if (full){
+    const cutId = ids.reduce((a,b)=> (dailyHcps(y,a)[0]-dailyHcps(y,a)[3]) >= (dailyHcps(y,b)[0]-dailyHcps(y,b)[3]) ? a : b);
+    const c0=dailyHcps(y,cutId)[0], c3=dailyHcps(y,cutId)[3];
+    if (c0>c3){
+      let line="Cut from "+c0+" to "+c3+" in four days";
+      if (cutId===champ) line+=" — and won the trophy";
+      A.push(["Bandit Watch", nm(y,cutId), who(cutId), line, "The handicap committee will see you now. Bring a lawyer."]);
+    }
+  }
+  if (bigConcede)
+    A.push(["Most Generous Man in Golf", nm(y,bigConcede.giver), who(bigConcede.giver),
+      "Gave "+sur(y,bigConcede.taker)+" "+bigConcede.shots+" shots on "+wd[bigConcede.day]+" — "+bigConcede.out,
+      "Charity begins on the first tee."]);
+  const odId = ids.reduce((a,b)=>recd[a]>=recd[b]?a:b);
+  if (recd[odId]>0)
+    A.push(["The Overdraft", nm(y,odId), who(odId),
+      "Borrowed "+recd[odId]+" shots across the week — more than anyone on tour",
+      "The Bank of "+(String(d.event.venue).includes("Saunton")?"Saunton":"Empordà")+" thanks you for your custom."]);
+  if (full){
+    const conId = ids.reduce((a,b)=>{ const sp=i=>Math.max(...played(y,i))-Math.min(...played(y,i));
+      return sp(a)<=sp(b)?a:b; });
+    const spv = Math.max(...played(y,conId))-Math.min(...played(y,conId));
+    A.push(["Mr Consistent", nm(y,conId), who(conId),
+      "Rounds of "+rstr(conId)+" — a spread of just "+spv, "Boring golf. Devastating results."]);
+  }
+  const asId = ids.reduce((a,b)=> (sgl[a]>sgl[b] || (sgl[a]===sgl[b]&&rec[a][0]>=rec[b][0])) ? a : b);
+  if (sgl[asId]>0)
+    A.push(["The Assassin", nm(y,asId), who(asId),
+      "Singles record "+rec[asId].join("-"),
+      "Shakes your hand on the 1st tee. Takes your point by the 15th."]);
+  const paId = ids.reduce((a,b)=>(bbbP[a]-sgl[a])>=(bbbP[b]-sgl[b])?a:b);
+  if (bbbP[paId]-sgl[paId]>=1)
+    A.push(["The Passenger", nm(y,paId), who(paId),
+      half(bbbP[paId])+" four-ball points against "+half(sgl[paId])+" singles",
+      "Travelled the week first class, in the better-ball sedan chair."]);
+  const tot={}; ids.forEach(i=>tot[i]=sgl[i]+bbbP[i]);
+  const mvpMax=Math.max(...Object.values(tot));
+  if (mvpMax>0){
+    const mvps=ord.filter(i=>tot[i]===mvpMax);
+    A.push(["Star Man", mvps.map(i=>esc(nm(y,i))).join(" &amp; "),
+      new Set(mvps.map(i=>tmOf(y,i))).size===1?who(mvps[0]):"who-plain",
+      half(mvpMax)+" points delivered for the team — no one gave more",
+      "Somebody had to do the heavy lifting."]);
+  }
+  if (bestWin)
+    A.push(["The Beatdown", nm(y,bestWin.win), who(bestWin.win),
+      "Defeated "+sur(y,bestWin.lose)+" "+bestWin.note+" on "+wd[bestWin.day],
+      "Over before the turn. Arguably over at breakfast."]);
+  if (full){
+    const suId = ids.reduce((a,b)=>{ const l=i=>{const r=d.rounds[i]; const v=r[r.length-1]; return typeof v==="number"?v:-1;};
+      return l(a)>=l(b)?a:b; });
+    const lastR = d.rounds[suId][d.rounds[suId].length-1];
+    A.push(["Sunday Best", nm(y,suId), who(suId),
+      lastR+" points in the final round — best on tour",
+      "Peaked, magnificently, the moment it no longer mattered."]);
+    const reps = Object.entries(meets).filter(([k,v])=>v.length>1);
+    if (reps.length){
+      const [k,v]=reps.sort((a,b)=>b[1].length-a[1].length)[0];
+      const [a,b]=k.split("|");
+      A.push(["Groundhog Day", esc(sur(y,a))+" v "+esc(sur(y,b)), "who-plain",
+        "Drawn together "+v.length+" times (days "+v.join(", ")+")",
+        "The hat has no memory. The players certainly do."]);
+    } else {
+      const n=d.matches.reduce((t,m)=>t+m.singles.length,0);
+      A.push(["The Perfect Draw","The Hat","who-plain", n+" singles · no repeat pairing all week",
+        "Fresh meat, every single morning. The hat gods smiled."]);
+    }
+    const cw = ttCareerWins(champ, +y);
+    if (cw>1){
+      const ordinal={2:"second",3:"third",4:"fourth",5:"fifth",6:"sixth"}[cw]||cw+"th";
+      A.push(["The Serial Offender", nm(y,champ), who(champ),
+        "Career Tourist Trophy no. "+cw,
+        "His "+ordinal+" title. At this point it is simply showing off."]);
+    }
+    A.push(["The Dynasty","Team Blue","who-blue",
+      LEGACY.trophyTally.BLUE+"–"+LEGACY.trophyTally.RED+" in trophies since the tour began",
+      "Tour "+(LEGACY.tourNumbering["2026"]||11)+" approaches. The empire shows no sign of falling."]);
+  }
+  return A;
+}
+
+/* ---------- views ---------- */
+function vBoard(y){
+  const d = DATA[y], ds = dayScores(y);
+  const dnames=["","Day One","Day Two","Day Three","Day Four"];
+  let cum_r=0, cum_b=0, cells="";
+  d.days.forEach(x=>{
+    const s=ds.days[x.day]; cum_r+=s.RED; cum_b+=s.BLUE;
+    const w = s.BLUE>s.RED?"BLUE":(s.RED>s.BLUE?"RED":(s.RED?"HALVED":"NONE"));
+    const wt = {"RED":"Red day","BLUE":"Blue day","HALVED":"Halved","NONE":"—"}[w];
+    cells+='<div class="dy"><div class="dy-n">'+dnames[x.day]+'</div>'
+      +'<div class="dy-m">'+esc((x.weekday||"")+" · "+cName(x.course))+'</div>'
+      +'<div class="dy-s"><span class="t-r">'+half(s.RED)+'</span><span class="dy-dash">–</span><span class="t-b">'+half(s.BLUE)+'</span></div>'
+      +'<div class="dy-w w-'+w.toLowerCase()+'">'+wt+'</div>'
+      +'<div class="dy-c">after '+half(cum_r)+"–"+half(cum_b)+'</div></div>';
+  });
+  const total = ds.red+ds.blue;
+  const max = d.days.length * (d.matches.length ? (d.matches.reduce((t,m)=>t+m.singles.length,0)/d.days.length + d.matches.filter(m=>m.fourBBB!==null||m.format==="4ball").length/d.days.length) : 10);
+  let verdict="", sub="";
+  if (total>0){
+    if (ds.red===ds.blue){ const h=(d.event.holdersBefore||"BLUE");
+      verdict=(h==="BLUE"?"Blues":"Reds")+" retain the trophy"; }
+    else verdict=(ds.blue>ds.red?"Blue":"Red")+" win the trophy";
+    sub = total? "" : "";
+  } else verdict="Awaiting first blood";
+  const t = LEGACY.trophyTally;
+  const halfHTML = v => { const w0=Math.trunc(v); const f=Math.abs(v-w0)>=.25;
+    return ((w0||!f)?w0:"")+(f?'<span class="fr">½</span>':""); };
+  const tight = (half(ds.red).length+half(ds.blue).length)>=6 ? " plq-tight" : "";
+  const showStars = +y >= (LEGACY.trophyTally.asOf||2025);   // career tally is current — only show where it's true
+  const capR=d.players.find(p=>p.captain&&p.team==="RED"), capB=d.players.find(p=>p.captain&&p.team==="BLUE");
+  const capN = p => p ? '<span class="plq-capn"><span class="capb">C</span> '+esc(p.name)+'</span>' : "";
+  const dr = (function(){
+    const dd=d.days.filter(x=>x.date);
+    if (dd.length<2) return "";
+    const f=new Date(dd[0].date), l=new Date(dd[dd.length-1].date);
+    const ord=n2=>n2+(n2%10===1&&n2%100!==11?"st":n2%10===2&&n2%100!==12?"nd":n2%10===3&&n2%100!==13?"rd":"th");
+    const M=["January","February","March","April","May","June","July","August","September","October","November","December"];
+    if (f.getMonth()===l.getMonth()) return ord(f.getDate())+"–"+ord(l.getDate())+" "+M[f.getMonth()]+" "+f.getFullYear();
+    return ord(f.getDate())+" "+M[f.getMonth()]+" – "+ord(l.getDate())+" "+M[l.getMonth()]+" "+f.getFullYear();
+  })();
+  return '<header class="mast"><div class="kicker">'+esc(d.event.venue)+'</div>'
+    +'<h1>Not the Ryder Cup</h1>'
+    +'<div class="mast-rule"><span></span><em>'+y+'</em><span></span></div>'
+    +'<div class="subtitle">'+(dr?dr+' · ':'')+'Tour '+ (LEGACY.tourNumbering[y]|| (+y-2015)) +' · Trophies: Blue '+t.BLUE+' · Red '+t.RED+'</div></header>'
+    +'<section class="plaque"><div class="plq-in"><div class="plq-label">'+(total?"Score":"Scoreboard")+'</div>'
+    +'<div class="plq-row">'
+    +'<span class="plq-team plq-red">'+capN(capR)+'Red'+(showStars?'<span class="plq-stars">'+"★".repeat(t.RED)+'</span>':"")+'</span>'
+    +'<span class="plq-score'+tight+'"><b>'+halfHTML(ds.red)+'</b><i>–</i><b>'+halfHTML(ds.blue)+'</b></span>'
+    +'<span class="plq-team plq-blue">'+capN(capB)+'Blue'+(showStars?'<span class="plq-stars">'+"★".repeat(t.BLUE)+'</span>':"")+'</span>'
+    +'</div>'
+    +'<div class="plq-verdict">'+esc(verdict)+'</div>'
+    +'</div></section>'
+    +'<section class="days">'+cells+'</section>'
+    +'<div class="share-row"><button class="btn-primary" onclick="shareFull()">Share full report — every tab</button>'
+    +'<button class="btn-quiet" onclick="shareBoard()">Board only</button>'
+    +'<span class="note" id="shareStatus"></span></div>';
+}
+function vMatch(y){
+  const d=DATA[y], ds=dayScores(y);
+  const dnames=["","Day One","Day Two","Day Three","Day Four"];
+  let out='<h2 class="sec-t">Match Play</h2><div class="sec-s">'+esc(d.event.venue)+' · '+y+'</div>';
+  d.days.forEach(x=>{
+    const s=ds.days[x.day];
+    const w=s.BLUE>s.RED?"blue":(s.RED>s.BLUE?"red":(s.RED?"halved":"none"));
+    const wt=s.RED||s.BLUE ? ((w==="halved"?"Halved":(w.charAt(0).toUpperCase()+w.slice(1)+" day"))+", "+half(s.RED)+"–"+half(s.BLUE)) : "Not played";
+    let groups="";
+    d.matches.filter(m=>m.day===x.day).forEach(m=>{
+      let lines="";
+      m.singles.forEach(s2=>{
+        const {w:ww, note}=decide(s2);
+        const rcls = ww==="RED"?"nm win t-r":(ww==="HALVED"?"nm":(ww?"nm lose":"nm"));
+        const bcls = ww==="BLUE"?"nm win t-b":(ww==="HALVED"?"nm":(ww?"nm lose":"nm"));
+        const ncls = ww==="RED"?"sc-note t-r":(ww==="BLUE"?"sc-note t-b":(ww==="HALVED"?"sc-note sc-halved":"sc-note sc-tbd"));
+        lines+='<div class="sgl"><span class="'+rcls+'">'+esc(nm(y,s2.red))+'</span>'
+          +'<span class="'+ncls+'">'+(ww?esc(note):"v")+'</span>'
+          +'<span class="'+bcls+'">'+esc(nm(y,s2.blue))+'</span></div>';
+      });
+      let bonus="";
+      if (m.fourBBB){ const bw=m.fourBBB.winner;
+        const bc = bw==="RED"?"t-r":(bw==="BLUE"?"t-b":"mutd");
+        bonus='<div class="fb">Four-ball bonus · <b class="'+bc+'">'+(bw==="HALVED"?"Halved":bw.charAt(0)+bw.slice(1).toLowerCase())+'</b></div>';
+      } else if (m.format==="4ball"){
+        bonus='<div class="fb">Four-ball bonus · <b class="mutd">—</b></div>';
+      }
+      groups+='<div class="grp"><div class="grp-h"><span class="tee">'+esc(m.tee||"")+'</span>'
+        +'<span class="gfmt">'+(m.format==="2ball"?"Two-ball":"Four-ball")+'</span></div>'+lines+bonus+'</div>';
+    });
+    out+='<div class="mpd"><div class="mpd-h"><span class="mpd-t">'+dnames[x.day]+' — '+esc((x.weekday||"")+" · "+cName(x.course))+'</span>'
+      +'<span class="mpd-s w-'+w+'">'+wt+'</span></div><div class="grps">'+groups+'</div></div>';
+  });
+  return out;
+}
+function vTrophy(y){
+  const d=DATA[y];
+  const {ord, ranks, tie} = ttRanks(y);
+  const any = ord.some(i=>played(y,i).length);
+  if (!any) return '<h2 class="sec-t">The Tourist Trophy</h2><div class="empty">No rounds entered yet — the trophy awaits.</div>';
+  const rec={}; ord.forEach(i=>rec[i]=[0,0,0]);
+  DATA[y].matches.forEach(m=>m.singles.forEach(s=>{
+    const {w}=decide(s); if(!w)return;
+    if(w==="HALVED"){rec[s.red][1]++;rec[s.blue][1]++;}
+    else { const win=w==="RED"?s.red:s.blue, lose=w==="RED"?s.blue:s.red; rec[win][0]++; rec[lose][2]++; }
+  }));
+  const full = ord.every(i=>played(y,i).length===d.days.length);
+  let rows="";
+  ord.forEach(i=>{
+    const pos=ranks[i], tpos=(tie[pos]>1?"T":"")+pos;
+    const r=d.rounds[i]||[];
+    const mn = played(y,i).length ? Math.min(...played(y,i)) : null;
+    let used=false;
+    const rds=r.map(v=>{
+      if (typeof v!=="number") return "–";
+      if (full && !used && v===mn){ used=true; return "<s>"+v+"</s>"; }
+      return v;
+    }).join(" · ");
+    const b3=best3(y,i), nett=108-b3;
+    const stars = ttCareerWins(i, +y);
+    let cls="row", tag="";
+    if (i===ord[0] && full){ cls+=" champ"; tag='<span class="rtag rtag-gold">Champion</span>'; }
+    else if (i===ord[ord.length-1] && full) tag='<span class="rtag rtag-mute">Wooden spoon</span>';
+    rows+='<div class="'+cls+'"><div class="c-pos">'+tpos+'</div>'
+      +'<div class="c-name"><span class="c-team c-'+tmOf(y,i).toLowerCase()+'"></span>'+esc(nm(y,i))+capBadge(y,i)+starStr(stars)+tag+'</div>'
+      +'<div class="c-rounds">'+rds+'</div>'
+      +'<div class="c-rec">'+rec[i].join("-")+'</div>'
+      +'<div class="c-b3">'+(b3||"–")+'</div>'
+      +'<div class="c-nett">'+(played(y,i).length? (nett>0?"+":"")+nett : "–")+'</div></div>';
+  });
+  return '<h2 class="sec-t">The Tourist Trophy</h2>'
+    +'<div class="sec-s">Full-handicap Stableford · best three of four · ★ career titles</div>'
+    +'<div class="lb"><div class="row hd"><div class="c-pos">Pos</div><div class="c-name">Player</div>'
+    +'<div class="c-rounds">Rounds</div><div class="c-rec">W-H-L</div><div class="c-b3">Best 3</div><div class="c-nett">Nett</div></div>'
+    +rows+'</div>'
+    +'<p class="note">Ties below first place stand as shared positions; countback applies only should the trophy itself be tied.</p>';
+}
+function vAmmo(y){
+  const A = awards(y);
+  const preTour = +y>=EDIT_FROM && !Object.keys(DATA[y].rounds).some(i=>played(y,i).length);
+  if (!A.length) return '<h2 class="sec-t">Dinner Ammunition</h2><div class="empty">'
+    +(preTour?'Pick the tour party in Setup and the form guide writes itself.':'No scores yet — the kitchen is closed.')+'</div>';
+  const cards = A.map(([t,w,cls,stat,q])=>'<div class="aw"><div class="aw-rule"></div><h3 class="aw-title">'+t+'</h3>'
+    +'<div class="aw-who '+cls+'">'+(String(w).indexOf("&amp;")>=0||String(w).indexOf("<")>=0?w:esc(w))+'</div>'
+    +'<div class="aw-stat">'+stat+'</div><p class="aw-quote">“'+q+'”</p></div>').join("");
+  return '<h2 class="sec-t">'+(preTour?"The Form Guide":"Dinner Ammunition")+'</h2>'
+    +'<div class="sec-s">'+(preTour?"Pre-tour intelligence · computed from five years of history":"The unofficial awards · every word computed from the scores")+'</div>'
+    +'<div class="menu">'+cards+'</div>';
+}
+function vRecords(){
+  const t = LEGACY.trophyTally;
+  const yrs = Object.keys(DATA).sort();
+  let roll="";
+  yrs.forEach(y=>{
+    const {ord}=ttRanks(y); if(!ord.length||!played(y,ord[0]).length) return;
+    const ds=dayScores(y);
+    roll+='<div class="r"><div class="ry">'+y+' · '+esc((DATA[y].event.venue||"").split(",")[0])+'</div>'
+      +'<div class="rc">'+esc(nm(y,ord[0]))+' '+best3(y,ord[0])+'</div>'
+      +'<div class="rs">Team: '+half(ds.red)+'–'+half(ds.blue)+' · Spoon: '+esc(sur(y,ord[ord.length-1]))+'</div></div>';
+  });
+  const agg={};
+  yrs.forEach(y=>{
+    DATA[y].players.forEach(p=>{
+      const a=agg[p.id]=agg[p.id]||{name:p.name,apps:0,teams:new Set(),w:0,h:0,l:0,spoons:0};
+      a.apps++; a.teams.add(p.team);
+    });
+    DATA[y].matches.forEach(m=>m.singles.forEach(s=>{
+      const {w}=decide(s); if(!w) return;
+      if(w==="HALVED"){agg[s.red].h++;agg[s.blue].h++;}
+      else{ const win=w==="RED"?s.red:s.blue, lose=w==="RED"?s.blue:s.red; agg[win].w++; agg[lose].l++; }
+    }));
+    const {ord}=ttRanks(y);
+    if (ord.length && played(y,ord[ord.length-1]).length===DATA[y].days.length) agg[ord[ord.length-1]].spoons++;
+  });
+  const rows = Object.entries(agg).sort((a,b)=>{
+    const tw=i=>ttCareerWins(i,2026);
+    return tw(b[0])-tw(a[0]) || b[1].apps-a[1].apps || a[1].name.localeCompare(b[1].name);
+  }).map(([id,a])=>{
+    const tw=ttCareerWins(id,2026);
+    return '<div class="crow"><div>'+esc(a.name)+starStr(tw)+(a.teams.size>1?' <span class="rtag rtag-mute">Switcher</span>':'')+'</div>'
+      +'<div>'+a.apps+'</div><div>'+tw+'</div><div>'+a.w+'-'+a.h+'-'+a.l+'</div><div>'+a.spoons+'</div></div>';
+  }).join("");
+  const meets={};
+  yrs.forEach(y=>DATA[y].matches.forEach(m=>m.singles.forEach(s=>{
+    const {w}=decide(s); if(!w)return;
+    const key=[s.red,s.blue].sort().join("|");
+    const e=meets[key]=meets[key]||{n:0,a:0,b:0,h:0};
+    e.n++;
+    if(w==="HALVED")e.h++;
+    else{ const win=w==="RED"?s.red:s.blue; if(win===key.split("|")[0])e.a++; else e.b++; }
+  })));
+  const name=id=>{ for(const y of yrs) if(P(y)[id]) return P(y)[id].name; return id; };
+  const grudges = Object.entries(meets).filter(([k,v])=>v.n>=3).sort((a,b)=>b[1].n-a[1].n).slice(0,12)
+    .map(([k,v])=>{ const [a,b]=k.split("|");
+      return '<div class="grudge"><span><b>'+esc(name(a))+'</b> v <b>'+esc(name(b))+'</b></span>'
+        +'<span class="gr">'+v.n+' meetings · '+esc(name(a).split(" ").slice(-1)[0])+' '+v.a+'-'+v.h+'-'+v.b+'</span></div>'; }).join("");
+  const kiff = (LEGACY.openQuestions||[]).some(q=>q.indexOf("Kiff")>=0)
+    ? '<p class="note">Kevin Kiff claims a further title — the matter remains subject to committee inquiry.</p>' : '';
+  return '<h2 class="sec-t">The Record Book</h2>'
+    +'<div class="sec-s">Since the tour began · detailed records from 2021 (Tour 6)</div>'
+    +'<div class="tally"><span class="n t-b">'+t.BLUE+'</span><span class="v">–</span><span class="n t-r">'+t.RED+'</span></div>'
+    +'<div class="tally-sub">Trophies, Blue v Red · next: Tour '+(LEGACY.tourNumbering["2026"]||11)+', 2026</div>'
+    +'<div class="roll">'+roll+'</div>'
+    +'<div class="sec"><h2 class="sec-t">Career</h2><div class="sec-s">★ Tourist Trophy titles (incl. pre-2021) · singles record 2021–25</div>'
+    +'<div class="lb"><div class="crow hd"><div>Player</div><div>Apps</div><div>TT</div><div>W-H-L</div><div>Spoons</div></div>'+rows+'</div>'+kiff+'</div>'
+    +'<div class="sec"><h2 class="sec-t">Grudge Matches</h2><div class="sec-s">Most-met singles pairings, 2021–25</div>'
+    +'<div class="lb">'+grudges+'</div></div>';
+}
+/* ---------- entry ---------- */
+function vEnter(y){
+  if (sealed(y))
+    return '<h2 class="sec-t">Enter Scores</h2><div class="empty">The '+y+' tour is sealed in the record book.<br>History is not for editing.</div>';
+  const d=DATA[y];
+  let out='<h2 class="sec-t">Enter Scores</h2><div class="sec-s">'+y+' · pick a day, type Stableford totals, tap match results</div>';
+  if (!override["2026"] )
+    out+='<div class="panel" style="text-align:center"><button class="btn-quiet" onclick="makeSandbox()">Create 2026 rehearsal from the 2025 roster</button>'
+      +'<div class="note">Clones the players &amp; fixture with empty scores so you can rehearse an evening.</div></div>';
+  out+='<div class="chips-row">'+d.days.map(x=>'<button class="chip-btn'+(entryDay===x.day?" on":"")+'" onclick="setDay('+x.day+')">Day '+x.day+'</button>').join("")+'</div>';
+  out+='<div class="panel"><div class="sec-s" style="margin:2px 0 10px">Stableford totals — Day '+entryDay+' <span style="text-transform:none">(playing hcp shown)</span></div>';
+  d.players.forEach(p=>{
+    const v=d.rounds[p.id]?d.rounds[p.id][entryDay-1]:null;
+    const h=dailyHcps(y,p.id)[entryDay-1];
+    out+='<div class="erow"><span class="en"><span class="c-team c-'+p.team.toLowerCase()+'"></span>'+esc(p.name)
+      +' <span class="eh">('+ (typeof h==="number"?h:"–") +')</span></span>'
+      +'<input inputmode="numeric" pattern="[0-9]*" id="sc-'+p.id+'" value="'+(typeof v==="number"?v:"")+'"></div>';
+  });
+  out+='</div><div class="panel"><div class="sec-s" style="margin:2px 0 10px">Match results — Day '+entryDay+'</div>';
+  d.matches.filter(m=>m.day===entryDay).forEach((m,mi)=>{
+    m.singles.forEach((s,si)=>{
+      const {w,note}=decide(s);
+      const id=m.day+"_"+mi+"_"+si;
+      out+='<div class="mrow"><div class="who"><span class="t-r">'+esc(nm(y,s.red))+'</span><span class="mutd">v</span><span class="t-b">'+esc(nm(y,s.blue))+'</span></div>'
+        +'<div class="btns">'
+        +'<button class="rbtn'+(w==="RED"?" sel-red":"")+'" onclick="setWin(\''+id+'\',\'RED\')">'+esc(sur(y,s.red))+'</button>'
+        +'<button class="rbtn'+(w==="HALVED"?" sel-h":"")+'" onclick="setWin(\''+id+'\',\'HALVED\')">A/S</button>'
+        +'<button class="rbtn'+(w==="BLUE"?" sel-blue":"")+'" onclick="setWin(\''+id+'\',\'BLUE\')">'+esc(sur(y,s.blue))+'</button>'
+        +'</div>'
+        +(w==="RED"||w==="BLUE" ?
+          '<div class="marg"><span class="ml">Won</span><select onchange="setMarg(\''+id+'\',this.value)">'
+          +[["","—"],["1up","1 up"],["2&1","2&1"],["3&1","3&1"],["3&2","3&2"],["4&2","4&2"],["4&3","4&3"],["5&3","5&3"],["5&4","5&4"],["6&4","6&4"],["6&5","6&5"],["7&5","7&5"],["7&6","7&6"],["8&6","8&6"],["8&7","8&7"],["9&7","9&7"],["10&8","10&8"]]
+            .map(([v2,l])=>'<option value="'+v2+'"'+(note===l||note===v2?" selected":"")+'>'+l+'</option>').join("")
+          +'</select></div>' : "")
+        +'</div>';
+    });
+    if (m.format==="4ball"){
+      const id="fb_"+m.day+"_"+mi;
+      const bw=m.fourBBB?m.fourBBB.winner:null;
+      out+='<div class="mrow"><div class="who"><span class="mutd">Four-ball bonus · '+esc(m.tee||"")+'</span></div><div class="btns">'
+        +'<button class="rbtn'+(bw==="RED"?" sel-red":"")+'" onclick="setFB(\''+id+'\',\'RED\')">Red</button>'
+        +'<button class="rbtn'+(bw==="HALVED"?" sel-h":"")+'" onclick="setFB(\''+id+'\',\'HALVED\')">Halved</button>'
+        +'<button class="rbtn'+(bw==="BLUE"?" sel-blue":"")+'" onclick="setFB(\''+id+'\',\'BLUE\')">Blue</button>'
+        +'</div></div>';
+    }
+  });
+  out+='</div><div class="save-bar"><button class="btn-primary" onclick="saveScores()">Save Day '+entryDay+'</button>'
+    +(override[y]?'<button class="btn-quiet" onclick="resetYear()">Reset '+y+' to imported data</button>':"")
+    +'<span class="saved-note" id="savedNote"></span></div>';
+  const cfg=pubCfg();
+  out+='<div class="panel" style="margin-top:16px"><div class="sec-s" style="margin:2px 0 8px">Publish to the team site</div>'
+    +'<details'+(cfg?'':' open')+'><summary class="note" style="cursor:pointer;text-align:left">GitHub settings (one-off)</summary>'
+    +'<div class="ringer" style="margin-top:10px">'
+    +'<input id="pubOwner" placeholder="GitHub account" value="'+(cfg?esc(cfg.owner):"")+'">'
+    +'<input id="pubRepo" placeholder="Repository" value="'+(cfg?esc(cfg.repo):"")+'">'
+    +'<input id="pubToken" type="password" placeholder="Token" value="'+(cfg?esc(cfg.token):"")+'">'
+    +'<button class="btn-quiet" onclick="pubSave()">Save</button></div></details>'
+    +'<div style="text-align:center;margin-top:12px"><button class="btn-primary" onclick="publishNow()">Publish scores to team site</button>'
+    +'<div class="note" id="pubStatus">'+(cfg?'Publishing to '+esc(cfg.owner+"/"+cfg.repo):'One-off setup needed — ask Claude to walk you through it (10 minutes, then never again).')+'</div></div></div>';
+  return out;
+}
+/* entry handlers */
+window.setDay = d => { entryDay=d; render(); };
+window.setWin = (id,w) => {
+  if (sealed(curYear)) return;
+  const [dd,mi,si]=id.split("_").map(Number);
+  const ms=DATA[curYear].matches.filter(m=>m.day===dd);
+  const s=ms[mi].singles[si];
+  if (w==="HALVED") s.result="AS";
+  else s.result = w==="RED" ? {red:1,blue:null} : {red:null,blue:1}; /* margin refined via select */
+  markDirty(); render();
+};
+window.setMarg = (id,v) => {
+  if (sealed(curYear)) return;
+  const [dd,mi,si]=id.split("_").map(Number);
+  const ms=DATA[curYear].matches.filter(m=>m.day===dd);
+  const s=ms[mi].singles[si];
+  if (s.result==="AS"||s.result==null) return;
+  const redWon = marginOf(s.result.red)!=null && (marginOf(s.result.blue)==null || marginOf(s.result.red)>marginOf(s.result.blue));
+  let up=null,tp=null;
+  if (v==="1up"){ up="1up"; tp=null; }
+  else if (v){ const p=v.split("&"); up=+p[0]; tp=+p[1]; }
+  else { up=1; tp=null; }
+  s.result = redWon ? {red:up,blue:tp} : {red:tp,blue:up};
+  markDirty(); render();
+};
+window.setFB = (id,w) => {
+  if (sealed(curYear)) return;
+  const p=id.split("_"); const dd=+p[1], mi=+p[2];
+  const ms=DATA[curYear].matches.filter(m=>m.day===dd);
+  ms[mi].fourBBB = {winner:w};
+  markDirty(); render();
+};
+window.saveScores = () => {
+  if (sealed(curYear)) return;
+  const d=DATA[curYear];
+  d.players.forEach(pp=>{
+    const el=document.getElementById("sc-"+pp.id);
+    if(!el) return;
+    const v=el.value.trim();
+    if(!d.rounds[pp.id]) d.rounds[pp.id]=[null,null,null,null];
+    d.rounds[pp.id][entryDay-1] = v==="" ? null : Math.max(0,Math.min(60,parseInt(v)||0));
+  });
+  markDirty(true);
+  const n=document.getElementById("savedNote"); if(n) n.textContent="Saved — board updated";
+};
+function markDirty(persistNow){
+  if (sealed(curYear)) return;
+  override[curYear]=DATA[curYear];
+  localStorage.setItem(LS, JSON.stringify(override));
+}
+window.resetYear = () => {
+  if(!confirm("Reset "+curYear+" to the imported workbook data?")) return;
+  delete override[curYear];
+  localStorage.setItem(LS, JSON.stringify(override));
+  rebuildData(); render();
+};
+window.makeSandbox = () => {
+  const src=JSON.parse(JSON.stringify(BASE["2025"]));
+  src.year=2026;
+  src.event.venue="Empordà Golf Resort";
+  src.event.holdersBefore="BLUE";
+  src.days=DAYS2026.map(t=>({day:t.day,date:t.date,weekday:t.weekday,course:null}));
+  Object.keys(src.rounds).forEach(i=>src.rounds[i]=[null,null,null,null]);
+  src.matches.forEach(m=>{ m.singles.forEach(s=>s.result=null); if(m.fourBBB) m.fourBBB=null; });
+  delete src.dailyHcps;
+  override["2026"]=src;
+  localStorage.setItem(LS, JSON.stringify(override));
+  rebuildData(); curYear="2026"; curTab="enter"; render();
+};
+
+/* ---------- player dossiers ---------- */
+let curPlayer = "justin-lawrence";
+function careerOf(pid){
+  const yrs = Object.keys(DATA).sort().filter(y=>DATA[y].players.some(p=>p.id===pid));
+  const C = { yrs, teams:[], rounds:[], matches:[], partners:{}, twoBalls:0,
+              bbb:0, given:0, received:0, byDay:{}, byCourse:{}, finishes:[] };
+  yrs.forEach(y=>{
+    const d=DATA[y];
+    C.teams.push(d.players.find(p=>p.id===pid).team);
+    const courses={}; d.days.forEach(x=>courses[x.day]=(x.course||"").split(",")[0].trim());
+    (d.rounds[pid]||[]).forEach((s,k)=>{
+      if (typeof s!=="number") return;
+      const h=dailyHcps(y,pid)[k];
+      C.rounds.push({y, day:k+1, s, h, course:courses[k+1]||""});
+      (C.byDay[k+1]=C.byDay[k+1]||[]).push(s);
+      const cn=courses[k+1]||"?"; (C.byCourse[cn]=C.byCourse[cn]||[]).push(s);
+    });
+    d.matches.forEach(m=>{
+      const mine=m.singles.find(s2=>s2.red===pid||s2.blue===pid);
+      if (!mine) return;
+      const iAmRed = mine.red===pid;
+      const opp = iAmRed?mine.blue:mine.red;
+      const {w, note} = decide(mine);
+      let res=null;
+      if (w==="HALVED") res="H";
+      else if (w) res = (w==="RED")===iAmRed ? "W" : "L";
+      const hMe=dailyHcps(y,pid)[m.day-1], hOp=dailyHcps(y,opp)[m.day-1];
+      let shots=0, giving=false;
+      if (typeof hMe==="number" && typeof hOp==="number"){
+        shots=Math.abs(hMe-hOp); giving = hMe<hOp;
+        if (giving) C.given+=shots; else C.received+=shots;
+      }
+      C.matches.push({y, day:m.day, opp, res, note, shots, giving});
+      if (m.format==="4ball" && m.singles.length===2){
+        const other=m.singles.find(s2=>s2!==mine);
+        const partner = iAmRed?other.red:other.blue;
+        const pr = C.partners[partner]=C.partners[partner]||{w:0,h:0,l:0,n:0};
+        if (m.fourBBB){
+          pr.n++;
+          const bw=m.fourBBB.winner;
+          const myTeam = iAmRed?"RED":"BLUE";
+          if (bw==="HALVED") pr.h++;
+          else if (bw===myTeam){ pr.w++; C.bbb+=1; }
+          else pr.l++;
+          if (bw==="HALVED") C.bbb+=.5;
+        }
+      }
+      if (m.format==="2ball") C.twoBalls++;
+    });
+    const {ord}=ttRanks(y);
+    const full = (d.rounds[pid]||[]).filter(x=>typeof x==="number").length===d.days.length;
+    if (full) C.finishes.push({y, pos:ord.indexOf(pid)+1, of:ord.length, total:best3(y,pid)});
+  });
+  return C;
+}
+function vPlayers(){
+  const pool={};
+  Object.keys(DATA).sort().forEach(y=>DATA[y].players.forEach(p=>pool[p.id]=p.name));
+  if (!pool[curPlayer]) curPlayer=Object.keys(pool).sort()[0];
+  const picker = Object.entries(pool).sort((a,b)=>a[1].localeCompare(b[1]))
+    .map(([id,name])=>'<button class="pp-pill'+(id===curPlayer?" on":"")+'" onclick="setPlayer(\''+id+'\')">'+esc(name.split(" ").slice(-1)[0])+'</button>').join("");
+  const pid=curPlayer, name=pool[pid];
+  const C=careerOf(pid);
+  const stars=ttCareerWins(pid, 2099);
+  const leg=(LEGACY.careerTouristTrophyWins||{})[pid];
+  if (!C.rounds.length)
+    return '<h2 class="sec-t">Player Dossiers</h2><div class="pp-picker">'+picker+'</div>'
+      +'<div class="empty">'+esc(name)+' — no recorded form. An unknown quantity. Frankly, dangerous.</div>';
+
+  const w=C.matches.filter(m=>m.res==="W").length, h=C.matches.filter(m=>m.res==="H").length, l=C.matches.filter(m=>m.res==="L").length;
+  const pct = (w+h+l) ? Math.round(100*(w+.5*h)/(w+h+l)) : 0;
+  const spoons=C.finishes.filter(f=>f.pos===f.of).length;
+  const brides=C.finishes.filter(f=>f.pos===2).length;
+  const bestFin=C.finishes.length?C.finishes.reduce((a,b)=>b.pos<a.pos?b:a):null;
+
+  const bestR=C.rounds.reduce((a,b)=>b.s>a.s?b:a);
+  const worstR=C.rounds.reduce((a,b)=>b.s<a.s?b:a);
+  const avg=Math.round(10*C.rounds.reduce((t,r)=>t+r.s,0)/C.rounds.length)/10;
+  const to36=C.rounds.filter(r=>r.s>=36).length;
+  const bestTour=C.finishes.length?C.finishes.reduce((a,b)=>b.total>a.total?b:a):null;
+
+  const hcps=C.rounds.map(r=>r.h).filter(x=>typeof x==="number");
+  const loH=Math.min(...hcps), hiH=Math.max(...hcps);
+  let cut=null, rise=null, odo=0;
+  Object.keys(DATA).sort().forEach(y=>{
+    if(!DATA[y].players.some(p=>p.id===pid))return;
+    const dh=dailyHcps(y,pid);
+    for(let k=1;k<dh.length;k++){
+      if(typeof dh[k]!=="number"||typeof dh[k-1]!=="number")continue;
+      const dl=dh[k]-dh[k-1]; odo+=Math.abs(dl);
+      if(!cut||dl<cut.dl)cut={dl,y,day:k+1};
+      if(!rise||dl>rise.dl)rise={dl,y,day:k+1};
+    }});
+  const carry=carryInfo(pid);
+
+  const oppAgg={};
+  C.matches.forEach(m=>{ if(!m.res)return;
+    const o=oppAgg[m.opp]=oppAgg[m.opp]||{w:0,h:0,l:0,n:0};
+    o.n++; if(m.res==="W")o.w++; else if(m.res==="H")o.h++; else o.l++; });
+  const names={}; Object.keys(DATA).forEach(y=>DATA[y].players.forEach(p=>names[p.id]=p.name));
+  const nem = Object.entries(oppAgg).filter(([,o])=>o.n>=2).sort((a,b)=> (b[1].l-b[1].w)-(a[1].l-a[1].w) || b[1].n-a[1].n)[0];
+  const bun = Object.entries(oppAgg).filter(([,o])=>o.n>=2).sort((a,b)=> (b[1].w-b[1].l)-(a[1].w-a[1].l) || b[1].n-a[1].n)[0];
+  const bigWin = C.matches.filter(m=>m.res==="W"&&m.note&&m.note!=="A/S").sort((a,b)=>{
+    const v=x=>{const mm=x.note.match(/^(\d+)(?:&(\d+))?/); return mm?[+mm[1],+(mm[2]||0)]:[0,0];};
+    const [au,at]=v(a),[bu,bt]=v(b); return bu-au||bt-at; })[0];
+  const bigLoss = C.matches.filter(m=>m.res==="L"&&m.note&&m.note!=="A/S").sort((a,b)=>{
+    const v=x=>{const mm=x.note.match(/^(\d+)(?:&(\d+))?/); return mm?[+mm[1],+(mm[2]||0)]:[0,0];};
+    const [au,at]=v(a),[bu,bt]=v(b); return bu-au||bt-at; })[0];
+  const maxGive=C.matches.filter(m=>m.giving).sort((a,b)=>b.shots-a.shots)[0];
+  const maxTake=C.matches.filter(m=>!m.giving&&m.shots>0).sort((a,b)=>b.shots-a.shots)[0];
+
+  let curW=0,maxW=0,curL=0,maxL=0;
+  C.matches.forEach(m=>{ if(!m.res)return;
+    if(m.res==="W"){curW++;curL=0;} else if(m.res==="L"){curL++;curW=0;} else {curW=0;curL=0;}
+    maxW=Math.max(maxW,curW); maxL=Math.max(maxL,curL); });
+
+  const dayAvg=Object.entries(C.byDay).map(([d2,v])=>[d2, v.reduce((a,b)=>a+b,0)/v.length]);
+  const bestDay=dayAvg.slice().sort((a,b)=>b[1]-a[1])[0];
+  const worstDay=dayAvg.slice().sort((a,b)=>a[1]-b[1])[0];
+  const courseAvg=Object.entries(C.byCourse).filter(([c])=>c&&c!=="?").map(([c,v])=>[c, v.reduce((a,b)=>a+b,0)/v.length]);
+  const bestCourse=courseAvg.slice().sort((a,b)=>b[1]-a[1])[0];
+  const partBest=Object.entries(C.partners).filter(([,p])=>p.n>=2).sort((a,b)=>(b[1].w/b[1].n)-(a[1].w/a[1].n))[0];
+  const partWorst=Object.entries(C.partners).filter(([,p])=>p.n>=2).sort((a,b)=>(a[1].w/a[1].n)-(b[1].w/b[1].n))[0];
+  const dayNames={1:"Day One",2:"Day Two",3:"Day Three",4:"Day Four"};
+  const sw = (typeof odo==="number") ? odo : 0;
+  const teamSet=[...new Set(C.teams)];
+  const net=C.given-C.received;
+
+  function srow(label,val,note){
+    return '<div class="srow"><span class="sl">'+label+'</span><span class="sv">'+val+'</span>'
+      +(note?'<span class="sn">'+note+'</span>':"")+'</div>';
+  }
+  function secHead(t,s){ return '<div class="sec"><h2 class="sec-t">'+t+'</h2>'+(s?'<div class="sec-s">'+s+'</div>':'<div style="height:14px"></div>'); }
+
+  const capNow = CAPTAINS.RED===pid ? "RED" : (CAPTAINS.BLUE===pid ? "BLUE" : null);
+  const capPast = Object.keys(DATA).sort().filter(y=>+y<EDIT_FROM && (DATA[y].players.find(p=>p.id===pid)||{}).captain);
+  let capLine="";
+  if (capNow) capLine=' · <b>Captain of the '+(capNow==="RED"?"Reds":"Blues")+', '+NEXT+'</b> — wears the armband, carries the blame'
+    +(capPast.length?' (previous spell: '+capPast.join(", ")+')':"");
+  else if (capPast.length) capLine=' · former captain ('+capPast.join(", ")+') — relieved of command';
+  let out='<h2 class="sec-t">Player Dossiers</h2>'
+    +'<div class="sec-s">the full charge sheet, one tourist at a time</div>'
+    +'<div class="pp-picker">'+picker+'</div>'
+    +'<header class="mast" style="margin-top:10px"><h1 style="font-size:clamp(26px,5vw,40px)">'+(capNow?'<span class="capb">C</span> ':"")+esc(name)+starStr(stars)+'</h1>'
+    +'<div class="subtitle">'+C.yrs.join(" · ")+' · '+(teamSet.length>1?"⇄ both colours worn — loyalty negotiable":teamSet[0].charAt(0)+teamSet[0].slice(1).toLowerCase()+" loyalist")
+    +(leg&&leg.pre2021?' · '+leg.pre2021+' pre-2021 title'+(leg.pre2021>1?'s':'')+' on the books':'')
+    +capLine+'</div></header>'
+    +'<div class="quart" style="margin-top:18px">'
+    +'<div class="q"><div class="q-n">'+C.yrs.length+'</div><div class="q-l">Tours<br>played</div></div>'
+    +'<div class="q"><div class="q-n">'+w+'-'+h+'-'+l+'</div><div class="q-l">Career singles<br>'+pct+'% won</div></div>'
+    +'<div class="q"><div class="q-n">'+stars+'</div><div class="q-l">Tourist Trophy<br>titles</div></div>'
+    +'<div class="q"><div class="q-n">'+spoons+'</div><div class="q-l">Wooden<br>spoon'+(spoons===1?"":"s")+'</div></div>'
+    +'</div>';
+
+  out+=secHead("Scoring","stableford, career");
+  out+='<div class="lb">'
+    +srow("Best round", bestR.s, dayNames[bestR.day]+" "+bestR.y+(bestR.course?" · "+esc(bestR.course):""))
+    +srow("Worst round", worstR.s, dayNames[worstR.day]+" "+worstR.y+" — a day best forgotten")
+    +srow("Career average", avg, C.rounds.length+" rounds recorded")
+    +srow("Played to handicap or better", to36+" of "+C.rounds.length, Math.round(100*to36/C.rounds.length)+"% — the committee is watching")
+    +(bestTour?srow("Best tour", bestTour.total+" ("+bestTour.y+")", "finished "+bestTour.pos+(bestTour.pos===1?"st — champion":bestTour.pos===2?"nd":bestTour.pos===3?"rd":"th")):"")
+    +(bestFin?srow("Best Trophy finish", bestFin.pos===1?"Champion":"#"+bestFin.pos, bestFin.y+(brides?" · bridesmaid ×"+brides:"")):"")
+    +'</div></div>';
+
+  out+=secHead("The Handicap Rap Sheet","what the nightly algorithm has done to this man");
+  out+='<div class="lb">'
+    +srow("Lowest playing handicap", loH, "peak fitness")
+    +srow("Highest playing handicap", hiH, hiH-loH>=10?"a different sport entirely":"")
+    +(cut&&cut.dl<0?srow("Harshest overnight cut", cut.dl, dayNames[cut.day]+" "+cut.y+" — punished for playing well"):"")
+    +(rise&&rise.dl>0?srow("Kindest overnight gift", "+"+rise.dl, dayNames[rise.day]+" "+rise.y+" — rewarded for failure"):"")
+    +srow("The Odometer", sw+" shots", "total handicap moved, career — the algorithm never sleeps")
+    +(carry?srow("Carries into "+NEXT, carry.hcp, "from "+carry.year+(carry.raw!==carry.hcp?" (raw "+carry.raw+")":"")):"")
+    +'</div></div>';
+
+  out+=secHead("Match Play","singles, career");
+  out+='<div class="lb">'
+    +(bigWin?srow("Biggest win", esc(bigWin.note), "v "+esc((names[bigWin.opp]||bigWin.opp).split(" ").slice(-1)[0])+", "+bigWin.y):"")
+    +(bigLoss?srow("Heaviest defeat", esc(bigLoss.note), "v "+esc((names[bigLoss.opp]||bigLoss.opp).split(" ").slice(-1)[0])+", "+bigLoss.y+" — still not spoken of"):"")
+    +srow("Longest win streak", maxW||"–", maxW>=3?"a genuine hot streak":"")
+    +srow("Longest losing streak", maxL||"–", maxL>=3?"character-building stuff":"")
+    +srow("2-ball duty", C.twoBalls+" time"+(C.twoBalls===1?"":"s"), "sent out alone, no partner to blame")
+    +'</div></div>';
+
+  out+=secHead("The Shots Ledger","strokes given and received, career");
+  out+='<div class="lb">'
+    +srow("Shots given", C.given, "")
+    +srow("Shots received", C.received, "")
+    +srow(net>=0?"Net philanthropist":"Net beneficiary", Math.abs(net), net>=0?"the tour thanks its sponsor":"living comfortably off the field")
+    +(maxGive?srow("Most given in one match", maxGive.shots, "v "+esc((names[maxGive.opp]||"").split(" ").slice(-1)[0])+", "+maxGive.y+" — "+(maxGive.res==="W"?"and STILL won":maxGive.res==="L"?"and duly lost":"halved, somehow")):"")
+    +(maxTake?srow("Most received in one match", maxTake.shots, "v "+esc((names[maxTake.opp]||"").split(" ").slice(-1)[0])+", "+maxTake.y+" — "+(maxTake.res==="W"?"and cashed them in":maxTake.res==="L"?"and lost anyway, which takes talent":"halved")):"")
+    +'</div></div>';
+
+  out+=secHead("Company Kept","who to avoid at the draw");
+  out+='<div class="lb">'
+    +(nem&&nem[1].l>nem[1].w?srow("Nemesis", esc(names[nem[0]]||nem[0]), nem[1].w+"-"+nem[1].h+"-"+nem[1].l+" against — crosses the street to avoid him"):srow("Nemesis","none found","nobody owns this man. Yet."))
+    +(bun&&bun[1].w>bun[1].l?srow("The Bunny", esc(names[bun[0]]||bun[0]), bun[1].w+"-"+bun[1].h+"-"+bun[1].l+" in his favour — sends a Christmas card every year"):"")
+    +(partBest?srow("Best partner", esc(names[partBest[0]]||partBest[0]), partBest[1].w+" of "+partBest[1].n+" four-ball bonuses together"):"")
+    +(partWorst&&partBest&&partWorst[0]!==partBest[0]?srow("Partner to dodge", esc(names[partWorst[0]]||partWorst[0]), partWorst[1].w+" of "+partWorst[1].n+" together — the sedan chair has two seats"):"")
+    +'</div></div>';
+
+  out+=secHead("Patterns","habits the data refuses to hide");
+  out+='<div class="lb">'
+    +(bestDay?srow("Best day of the tour", dayNames[bestDay[0]], "averages "+(Math.round(10*bestDay[1])/10)):"")
+    +(worstDay&&worstDay[0]!==bestDay[0]?srow("Worst day of the tour", dayNames[worstDay[0]], "averages "+(Math.round(10*worstDay[1])/10)+" — book the physio"):"")
+    +(bestCourse?srow("Happiest course", esc(bestCourse[0]), "averages "+(Math.round(10*bestCourse[1])/10)):"")
+    +srow("Four-ball bonus points", half(C.bbb), "career")
+    +'</div></div>';
+  return out;
+}
+window.setPlayer = id => { curPlayer=id; render(); };
+
+/* ---------- tour party setup (always targets the upcoming tour) ---------- */
+const NEXT = String(EDIT_FROM);
+const CAPTAINS = { RED:"chris-wright", BLUE:"kevin-kiff" };   // 2026: Wright leads Red, Kiff leads Blue
+const DAYS2026 = [   // Thu 1st – Sun 4th October 2026; course order TBC (Justin to confirm)
+  {day:1,date:"2026-10-01",weekday:"Thu"},{day:2,date:"2026-10-02",weekday:"Fri"},
+  {day:3,date:"2026-10-03",weekday:"Sat"},{day:4,date:"2026-10-04",weekday:"Sun"}];
+function applyCaptains(d){
+  d.players.forEach(p=>{ if (CAPTAINS[p.team]===p.id) p.captain=true; else delete p.captain; });
+}
+function applyDates(d){
+  d.days.forEach((x,k)=>{ const t=DAYS2026[k]; if (t){ x.date=t.date; x.weekday=t.weekday; }
+    if (!d.courseOrderConfirmed) x.course=null; });
+}
+if (DATA[NEXT]) { applyCaptains(DATA[NEXT]); applyDates(DATA[NEXT]); }
+function carryInfo(id){
+  for (const y of Object.keys(BASE).sort().reverse()){
+    if (!BASE[y].rounds[id]) continue;
+    const dh = dailyHcps(y, id);
+    const s = BASE[y].rounds[id];
+    const vals = [];
+    for (let k=0;k<s.length;k++)
+      if (typeof s[k]==="number" && typeof dh[k]==="number") vals.push(dh[k] + 36 - s[k]);
+    if (!vals.length) continue;
+    const raw = vals.reduce((a,b)=>a+b,0)/vals.length;
+    return {hcp: Math.round(raw), raw: Math.round(raw*100)/100, year: y};
+  }
+  return null;
+}
+function candidatePool(){
+  const pool = {};
+  for (const y of Object.keys(BASE).sort()){
+    BASE[y].players.forEach(p=>{
+      pool[p.id] = {id:p.id, name:p.name, usual:p.team, last:y};
+    });
+  }
+  Object.values(pool).forEach(c=>{ c.carry = carryInfo(c.id); });
+  if (DATA[NEXT]) DATA[NEXT].players.forEach(p=>{
+    if (!pool[p.id]) pool[p.id] = {id:p.id, name:p.name, usual:p.team, last:null, carry:null, ringer:true};
+  });
+  return pool;
+}
+function ensureNext(){
+  if (DATA[NEXT]) return DATA[NEXT];
+  const scaffold = { schemaVersion:1, year:+NEXT,
+    event:{name:"Not the Ryder Cup", venue:"Empordà Golf Resort", holdersBefore:"BLUE"},
+    courses:{},
+    days:DAYS2026.map(t=>({day:t.day,date:t.date,weekday:t.weekday,course:null})),
+    players:[], rounds:{}, matches:[] };
+  DATA[NEXT]=scaffold; override[NEXT]=scaffold;
+  localStorage.setItem(LS, JSON.stringify(override));
+  return scaffold;
+}
+function persistNext(){ applyCaptains(DATA[NEXT]); override[NEXT]=DATA[NEXT]; localStorage.setItem(LS, JSON.stringify(override)); }
+window.setupCement = () => {
+  const d=DATA[NEXT]; if(!d||!d.players.length||drawLocked(NEXT)) return;
+  d.partyLocked=!d.partyLocked;
+  persistNext(); render();
+};
+function fixtureGuard(){
+  const d=DATA[NEXT];
+  if (d && d.matches.length){
+    if (!confirm("This changes the tour party — the current draw will be cleared (scores kept). Continue?")) return false;
+    d.matches=[];
+  }
+  return true;
+}
+window.setupToggle = id => {
+  if (DATA[NEXT] && (DATA[NEXT].partyLocked || drawLocked(NEXT))) return;
+  const d=ensureNext();
+  const ix=d.players.findIndex(p=>p.id===id);
+  if (ix>=0){
+    const hasScores=(d.rounds[id]||[]).some(x=>typeof x==="number");
+    if (hasScores && !confirm("Remove "+d.players[ix].name+"? Their entered scores will be lost.")) return;
+    if (!fixtureGuard()) return;
+    d.players.splice(ix,1); delete d.rounds[id];
+  } else {
+    if (!fixtureGuard()) return;
+    const c=candidatePool()[id];
+    d.players.push({id, name:c.name, team:c.usual, startHcp:c.carry?c.carry.hcp:18});
+    d.rounds[id]=[null,null,null,null];
+  }
+  persistNext(); render();
+};
+window.setupMove = id => {
+  const d=DATA[NEXT]; if(!d||d.partyLocked||drawLocked(NEXT)) return;
+  const p=d.players.find(x=>x.id===id); if(!p) return;
+  if (!fixtureGuard()) return;
+  p.team = p.team==="RED"?"BLUE":"RED";
+  persistNext(); render();
+};
+window.setupDrop = (team,ev) => {
+  ev.preventDefault();
+  const id=ev.dataTransfer.getData("text/plain");
+  const d=DATA[NEXT]; if(!d||d.partyLocked||drawLocked(NEXT)) return;
+  const p=d.players.find(x=>x.id===id);
+  if (p && p.team!==team){ if(!fixtureGuard()) return; p.team=team; persistNext(); render(); }
+};
+window.setupDrag = (id,ev) => { ev.dataTransfer.setData("text/plain", id); };
+window.setupRinger = () => {
+  if (DATA[NEXT] && (DATA[NEXT].partyLocked || drawLocked(NEXT))) return;
+  const nameEl=document.getElementById("rgName"), hcpEl=document.getElementById("rgHcp"), teamEl=document.getElementById("rgTeam");
+  const name=(nameEl.value||"").trim();
+  const hcp=parseInt(hcpEl.value);
+  if (!name || isNaN(hcp)){ alert("Ringer needs a name and a handicap."); return; }
+  const d=ensureNext();
+  const id=name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  if (d.players.some(p=>p.id===id)){ alert("Already in the party."); return; }
+  if (!fixtureGuard()) return;
+  d.players.push({id, name, team:teamEl.value, startHcp:Math.max(0,Math.min(54,hcp)), ringer:true});
+  d.rounds[id]=[null,null,null,null];
+  persistNext(); render();
+};
+function schemePanel(d){
+  const n=d?d.players.length:0;
+  if (!n) return "";
+  const nr=d.players.filter(p=>p.team==="RED").length, nb=n-nr;
+  if (nr!==nb)
+    return '<div class="panel scheme"><div class="sec-s" style="margin:2px 0 8px">The Play Scheme</div>'
+      +'<div class="note"><b>Teams uneven ('+nr+' v '+nb+')</b> — even them up (or we agree the ghost rule) before the scheme settles.</div></div>';
+  const perTeam=nr, fb=Math.floor(perTeam/2), two=perTeam%2;
+  const pts=perTeam+fb, total=pts*4;
+  return '<div class="panel scheme"><div class="sec-s" style="margin:2px 0 8px">The Play Scheme — '+n+' players</div>'
+    +'<div class="sch-row"><b>'+perTeam+'</b> singles matches a day'+(two?' — including one 2-ball (singles only)':'')+'</div>'
+    +'<div class="sch-row"><b>'+fb+'</b> four-ball bonus points a day</div>'
+    +'<div class="sch-row"><b>'+pts+'</b> points a day · <b>'+total+'</b> for the week · level at the end — holders retain</div>'
+    +(two?'<div class="note">The 2-ball needs no bonus point: both teams share it equally every day, so red-v-blue stays fair. The draw rotates who gets 2-ball duty.</div>':"")
+    +'</div>';
+}
+function vSetup(){
+  const pool=candidatePool();
+  const d=DATA[NEXT];
+  const locked=!!(d&&(d.partyLocked||drawLocked(NEXT)));
+  const underway=drawLocked(NEXT);
+  const sel={}; if (d) d.players.forEach(p=>sel[p.id]=p);
+  const cols={RED:[],BLUE:[]};
+  Object.values(pool).sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>{
+    const cur=sel[c.id];
+    const team=cur?cur.team:c.usual;
+    cols[team].push({c,cur});
+  });
+  function pill({c,cur}){
+    const on=!!cur;
+    const isCap=on&&cur.captain;
+    const stars=ttCareerWins(c.id,+NEXT-1);
+    const hc = cur ? cur.startHcp : (c.carry?c.carry.hcp:"–");
+    const prov = c.ringer||cur&&cur.ringer ? "new" : (c.carry ? "’"+String(c.carry.year).slice(2)+(c.carry.raw!==c.carry.hcp?" · "+c.carry.raw:"") : "");
+    return '<div class="pill'+(on?" on p-"+(cur.team.toLowerCase()):"")+(locked&&!on?" off":"")+'" draggable="'+(on&&!locked?"true":"false")+'"'
+      +(on&&!locked?' ondragstart="setupDrag(\''+c.id+'\',event)"':"")
+      +(!locked?' onclick="setupToggle(\''+c.id+'\')"':"")+'>'
+      +'<span class="pl-nm">'+(isCap?'<span class="capb">C</span> ':"")+esc(c.name)
+      +(stars?' <span class="stars">'+"★".repeat(Math.min(stars,4))+'</span>':"")+'</span>'
+      +'<span class="pl-h">'+hc+(prov?' <em>('+prov+')</em>':"")+'</span>'
+      +(on&&!locked?'<button class="mv" onclick="event.stopPropagation();setupMove(\''+c.id+'\')" title="Switch team">⇄</button>':"")
+      +'</div>';
+  }
+  function colBody(team){
+    const list=cols[team];
+    if (!locked) return list.map(pill).join("");
+    const picked=list.filter(x=>x.cur).sort((a,b)=>{
+      if (!!b.cur.captain-!!a.cur.captain) return (!!b.cur.captain)-(!!a.cur.captain);
+      return a.c.name.localeCompare(b.c.name);
+    });
+    const rest=list.filter(x=>!x.cur);
+    return picked.map(pill).join("")
+      +(rest.length?'<div class="pdiv">not touring this year</div>'+rest.map(pill).join(""):"");
+  }
+  function colHead(team){
+    const picked=(d?d.players.filter(p=>p.team===team):[]);
+    const tot=picked.reduce((t,p)=>t+(p.startHcp||0),0);
+    const cap=picked.find(p=>p.captain);
+    return '<div class="col-h t-'+(team==="RED"?"r":"b")+'">'+team.charAt(0)+team.slice(1).toLowerCase()
+      +' — '+picked.length+' picked'+(picked.length?' · hcp '+tot:"")
+      +(cap?'<div class="col-cap">Captain: '+esc(cap.name)+'</div>':(picked.length?'<div class="col-cap mutd">currently leaderless</div>':""))
+      +'</div>';
+  }
+  const n=d?d.players.length:0;
+  return '<h2 class="sec-t">The Tour Party</h2>'
+    +'<div class="sec-s">'+NEXT+' · tap to pick from past tourists · ⇄ or drag to switch sides · handicaps carry from each player’s last tour</div>'
+    +(n?'<div style="text-align:center;margin-bottom:16px">'
+      +(underway?'<span class="note" style="display:inline-block">🔒 The tour is under way — the party is final.</span>'
+        :(locked?'<button class="btn-quiet" onclick="setupCement()">Party cemented 🔒 · re-open selection</button>'
+                :'<button class="btn-primary" onclick="setupCement()">Cement the tour party</button>'))
+      +'</div>':"")
+    +'<div class="party">'
+    +'<div class="pcol" ondragover="event.preventDefault()" ondrop="setupDrop(\'RED\',event)">'+colHead("RED")+colBody("RED")+'</div>'
+    +'<div class="pcol" ondragover="event.preventDefault()" ondrop="setupDrop(\'BLUE\',event)">'+colHead("BLUE")+colBody("BLUE")+'</div>'
+    +'</div>'
+    +schemePanel(d)
+    +(locked?"":'<div class="panel" style="margin-top:16px"><div class="sec-s" style="margin:2px 0 10px">Add a ringer</div>'
+    +'<div class="ringer"><input id="rgName" placeholder="Name">'
+    +'<input id="rgHcp" inputmode="numeric" placeholder="Hcp" style="width:70px">'
+    +'<select id="rgTeam"><option value="RED">Red</option><option value="BLUE">Blue</option></select>'
+    +'<button class="btn-quiet" onclick="setupRinger()">Add</button></div>'
+    +'<div class="note">For the desperate years when someone brand new joins the tour.</div></div>');
+}
+
+/* ---------- draw generator ---------- */
+/* One draw creates BOTH the singles opponents and the 4BBB partners (the two same-team
+   players sharing a 4-ball are partners). Optimises across ALL days at once:
+   repeat opponents (heavy) · repeat partners (heavy) · same-group repeats (medium)
+   · repeat 2-balls · tee-slot fairness · last-year rematches (light) · extreme hcp gaps (light).
+   Supports pinned pairings; pinned matches keep their day. */
+let proposal = null;
+let pins = [];   // [{day, red, blue}]
+/* once day one has arrived the fixture is final — no re-draws mid-tour */
+function todayISO(){ const t=new Date();
+  return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
+function tourStarted(y){
+  const d=DATA[y]; if(!d||!d.days||!d.days.length) return false;
+  const d1=d.days[0].date; if(!d1) return false;
+  return todayISO() >= d1;                    // ISO dates compare lexicographically
+}
+function hasFixture(y){ const d=DATA[y]; return !!(d&&d.matches&&d.matches.length); }
+/* locked = sealed history, or the tour is under way and a draw already exists */
+function drawLocked(y){ return sealed(y) || (tourStarted(y) && hasFixture(y)); }
+function fmtDate(iso){
+  if(!iso) return "";
+  const p=iso.split("-"), M=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const n=+p[2], s=(n%10===1&&n%100!==11)?"st":(n%10===2&&n%100!==12)?"nd":(n%10===3&&n%100!==13)?"rd":"th";
+  return n+s+" "+M[+p[1]-1]+" "+p[0];
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function priorMeets(){
+  const s={}; const y=String(EDIT_FROM-1);
+  if (DATA[y]) DATA[y].matches.forEach(m=>m.singles.forEach(x=>{ s[[x.red,x.blue].sort().join("|")]=1; }));
+  return s;
+}
+function drawBlocks(n){
+  const b=[]; let i=0;
+  if (n%2===1){ b.push([0]); i=1; }          // odd pair-count: the 2-ball goes out first
+  while(i<n){ b.push([i,i+1]); i+=2; }
+  return b;
+}
+function genDraw(y){
+  const d=DATA[y];
+  const reds=d.players.filter(p=>p.team==="RED").map(p=>p.id);
+  const blues=d.players.filter(p=>p.team==="BLUE").map(p=>p.id);
+  if (!reds.length || reds.length!==blues.length)
+    return {error:"Teams are uneven ("+reds.length+" v "+blues.length+"). The ghost-player rule is still to be agreed — even up the teams first."};
+  const n=reds.length, D=d.days.length;
+  const blocks=drawBlocks(n);
+  const prior=priorMeets();
+  const hcp={}; d.players.forEach(p=>hcp[p.id]=p.startHcp||0);
+  const pinsByDay={}; pins.forEach(p=>{ (pinsByDay[p.day]=pinsByDay[p.day]||[]).push(p); });
+
+  function newState(){
+    const st=[];
+    for(let dd=1;dd<=D;dd++){
+      const ro=shuffle(reds.slice()), bo=shuffle(blues.slice());
+      (pinsByDay[dd]||[]).forEach((pn,k)=>{     // park pins at the tail (always a 4-ball slot)
+        const tgt=n-1-k;
+        const ri=ro.indexOf(pn.red); if(ri>=0) [ro[tgt],ro[ri]]=[ro[ri],ro[tgt]];
+        const bi=bo.indexOf(pn.blue); if(bi>=0) [bo[tgt],bo[bi]]=[bo[bi],bo[tgt]];
+      });
+      st.push({ro,bo});
+    }
+    return st;
+  }
+  function frozen(dd){ const k=(pinsByDay[dd]||[]).length; return idx=>idx>=n-k; }
+  function tally(st){
+    const opp={}, part={}, grp={}, two={}, slot={};
+    let priorHits=0, gapPen=0;
+    st.forEach(({ro,bo})=>{
+      blocks.forEach((bl,slotIdx)=>{
+        const ids=[];
+        bl.forEach(ix=>{
+          ids.push(ro[ix],bo[ix]);
+          const k=[ro[ix],bo[ix]].sort().join("|");
+          opp[k]=(opp[k]||0)+1;
+          if(prior[k]) priorHits++;
+          const gap=Math.abs(hcp[ro[ix]]-hcp[bo[ix]]);
+          if(gap>20) gapPen+=(gap-20);
+        });
+        if(bl.length===2){
+          const pk=[ro[bl[0]],ro[bl[1]]].sort().join("|"); part[pk]=(part[pk]||0)+1;
+          const bk=[bo[bl[0]],bo[bl[1]]].sort().join("|"); part[bk]=(part[bk]||0)+1;
+          for(let a=0;a<4;a++)for(let b2=a+1;b2<4;b2++){
+            const gk=[ids[a],ids[b2]].sort().join("|"); grp[gk]=(grp[gk]||0)+1; }
+        } else ids.forEach(i2=>two[i2]=(two[i2]||0)+1);
+        ids.forEach(i2=>{ const sk=i2+"@"+slotIdx; slot[sk]=(slot[sk]||0)+1; });
+      });
+    });
+    let oppR=0, partR=0, grpR=0, twoR=0, slotR=0;
+    for(const k in opp) if(opp[k]>1) oppR+=opp[k]-1;
+    for(const k in part) if(part[k]>1) partR+=part[k]-1;
+    for(const k in grp) if(grp[k]>1) grpR+=grp[k]-1;
+    for(const k in two) if(two[k]>1) twoR+=two[k]-1;
+    for(const k in slot) if(slot[k]>1) slotR+=slot[k]-1;
+    const cost = 100*oppR + 80*partR + 30*grpR + 40*twoR + 5*slotR + 10*priorHits + 2*gapPen;
+    return {cost, oppR, partR, grpR, twoR, slotR, priorHits};
+  }
+  let best=null, bestT=null;
+  for(let r0=0;r0<6;r0++){
+    const st=newState();
+    let t=tally(st);
+    for(let it=0; it<14000; it++){
+      const dd=1+Math.floor(Math.random()*D);
+      const fz=frozen(dd);
+      const side=Math.random()<0.5?"ro":"bo";
+      const arr=st[dd-1][side];
+      const i=Math.floor(Math.random()*n), j=Math.floor(Math.random()*n);
+      if(i===j||fz(i)||fz(j)) continue;
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+      const t2=tally(st);
+      if(t2.cost<=t.cost) t=t2;
+      else [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    if(!bestT || t.cost<bestT.cost){ bestT=t; best=JSON.parse(JSON.stringify(st)); }
+  }
+  const tees=["1000h","1010h","1020h","1030h","1040h","1050h","1100h","1110h"];
+  const days = d.days.map((meta,di)=>{
+    const {ro,bo}=best[di];
+    return { day:meta.day, meta,
+      groups: blocks.map((bl,slotIdx)=>({
+        tee: tees[slotIdx]||("t"+slotIdx),
+        format: bl.length===1?"2ball":"4ball",
+        matches: bl.map(ix=>({red:ro[ix], blue:bo[ix]}))
+      })) };
+  });
+  return {days, diag:bestT};
+}
+window.genDrawClick = () => {
+  if (drawLocked(curYear)) return;
+  const res=genDraw(curYear);
+  if (res.error){ proposal={error:res.error}; } else proposal=res;
+  render();
+};
+window.togglePin = (dd,red,blue) => {
+  const ix=pins.findIndex(p=>p.day===dd&&p.red===red&&p.blue===blue);
+  if (ix>=0) pins.splice(ix,1); else pins.push({day:dd,red,blue});
+  render();
+};
+window.clearPins = () => { pins=[]; render(); };
+const PF="ntrc.prevfixture";
+function prevFixture(){ try{ const p=JSON.parse(localStorage.getItem(PF)||"null");
+  return (p&&p.year===curYear&&p.matches)?p:null; }catch(e){ return null; } }
+window.applyDraw = () => {
+  if (drawLocked(curYear) || !proposal || proposal.error) return;
+  const d=DATA[curYear];
+  const played2=d.matches.filter(m=>m.singles.some(s=>s.result!=null)||m.fourBBB);
+  if (played2.length && !confirm("Replace the fixture?\n\n"+played2.length+" match group"
+      +(played2.length===1?" has":"s have")+" results entered — those results will be cleared."
+      +"\nStableford scores are kept, and you can undo this straight afterwards."))
+    return;
+  localStorage.setItem(PF, JSON.stringify({year:curYear, matches:d.matches}));
+  const matches=[];
+  proposal.days.forEach(pd=>{
+    pd.groups.forEach(g=>{
+      matches.push({ day:pd.day, tee:g.tee, format:g.format,
+        singles:g.matches.map(m=>({red:m.red, blue:m.blue, result:null})),
+        fourBBB:null });
+    });
+  });
+  d.matches=matches;
+  markDirty(true);
+  proposal=null; pins=[];
+  curTab="match"; render();
+};
+window.undoDraw = () => {
+  const p=prevFixture(); if(!p||drawLocked(curYear)) return;
+  if (!confirm("Restore the previous fixture (and its results)?")) return;
+  DATA[curYear].matches=p.matches;
+  localStorage.removeItem(PF);
+  markDirty(true); curTab="match"; render();
+};
+function vDraw(y){
+  if (sealed(y))
+    return '<h2 class="sec-t">The Draw</h2><div class="empty">The '+y+' draw is history — see Match Play.</div>';
+  if (drawLocked(y)){
+    const d1=DATA[y].days[0].date;
+    return '<h2 class="sec-t">The Draw</h2>'
+      +'<div class="sec-s">'+y+' · the tour is under way</div>'
+      +'<div class="panel" style="text-align:center">'
+      +'<div style="font-size:34px;line-height:1;margin-bottom:14px">🔒</div>'
+      +'<div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--navy)">The draw is final</div>'
+      +'<div class="note" style="margin-top:10px">Play began on '+esc(fmtDate(d1))+'. The fixture is locked for the rest of the tour —'
+      +' no re-draws, no undo, no changes to the party.<br>See it on <b>Match Play</b>; enter results on <b>Enter</b>.</div>'
+      +'</div>';
+  }
+  const d=DATA[y];
+  let out='<h2 class="sec-t">The Draw</h2><div class="sec-s">'+y+' · opponents &amp; four-ball partners for all '+d.days.length+' days, optimised in one pull</div>';
+  const pv=prevFixture();
+  const live=d.matches.length;
+  out+='<div class="panel" style="text-align:center">'
+    +'<button class="btn-primary" onclick="genDrawClick()">'+(proposal&&!proposal.error?"Re-draw"+(pins.length?" (keeping "+pins.length+" pinned)":""):(live?"Draw again":"Generate the draw"))+'</button>'
+    +(pins.length?' <button class="btn-quiet" onclick="clearPins()">Unpin all</button>':"")
+    +(proposal&&!proposal.error?' <button class="btn-primary" style="background:var(--gold)" onclick="applyDraw()">Use this draw</button>':"")
+    +(pv?' <button class="btn-quiet" onclick="undoDraw()">Undo — restore previous draw</button>':"")
+    +'<div class="note">Minimises repeat opponents, repeat partners and repeat groups across the week · tap a match to pin it, then re-draw around your pins. Tee times are placeholders until confirmed.'
+    +(live?'<br>A fixture is already in place — drawing again replaces it, and you can undo straight afterwards.':"")
+    +'</div></div>';
+  if (proposal && proposal.error) out+='<div class="empty">'+esc(proposal.error)+'</div>';
+  if (proposal && !proposal.error){
+    const g=proposal.diag;
+    out+='<div class="sec-s" style="margin-bottom:18px">Repeat opponents: <b>'+g.oppR+'</b> · repeat partners: <b>'+g.partR+'</b> · repeat 2-balls: <b>'+g.twoR+'</b> · last-year rematches: <b>'+g.priorHits+'</b></div>';
+    const dnames=["","Day One","Day Two","Day Three","Day Four"];
+    proposal.days.forEach(pd=>{
+      let groups="";
+      pd.groups.forEach(gr=>{
+        let lines="";
+        gr.matches.forEach(m=>{
+          const pinned=pins.some(p=>p.day===pd.day&&p.red===m.red&&p.blue===m.blue);
+          const hr=P(y)[m.red]?P(y)[m.red].startHcp:"?", hb=P(y)[m.blue]?P(y)[m.blue].startHcp:"?";
+          const shots=(typeof hr==="number"&&typeof hb==="number")?Math.abs(hr-hb):"–";
+          lines+='<div class="sgl" style="cursor:pointer" onclick="togglePin('+pd.day+',\''+m.red+'\',\''+m.blue+'\')">'
+            +'<span class="nm t-r">'+esc(nm(y,m.red))+' <span class="eh">('+hr+')</span></span>'
+            +'<span class="sc-note '+(pinned?"":"sc-halved")+'">'+(pinned?"🔒":shots+" shots")+'</span>'
+            +'<span class="nm t-b" style="text-align:right"><span class="eh">('+hb+')</span> '+esc(nm(y,m.blue))+'</span></div>';
+        });
+        groups+='<div class="grp"><div class="grp-h"><span class="tee">'+gr.tee+'</span>'
+          +'<span class="gfmt">'+(gr.format==="2ball"?"Two-ball":"Four-ball — partners in colour")+'</span></div>'+lines+'</div>';
+      });
+      out+='<div class="mpd"><div class="mpd-h"><span class="mpd-t">'+dnames[pd.day]+' — '+esc((pd.meta.weekday||"")+" · "+cName(pd.meta.course))+'</span></div>'
+        +'<div class="grps">'+groups+'</div></div>';
+    });
+  } else if (!proposal) {
+    out+='<div class="empty">No draw yet — one tap replaces an evening of re-pulling names from the hat.</div>';
+  }
+  return out;
+}
+
+/* ---------- share-image export ---------- */
+window.shareBoard = async () => {
+  const y=curYear, d=DATA[y], ds=dayScores(y);
+  const W=1080, H=1440;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const SER='Charter, "Iowan Old Style", Palatino, Georgia, serif';
+  const SAN='-apple-system, "Helvetica Neue", Arial, sans-serif';
+  const IVORY="#f7f4ec", NAVY="#122341", NAVY2="#1a2f54", GOLD="#a8863c", GOLDP="#d9c89a",
+        RED="#a32636", BLUE="#1e4f8f", MUT="#7a7466", HAIR="#e2dccb";
+  function rr(x0,y0,w,h,r){ x.beginPath(); x.moveTo(x0+r,y0); x.arcTo(x0+w,y0,x0+w,y0+h,r);
+    x.arcTo(x0+w,y0+h,x0,y0+h,r); x.arcTo(x0,y0+h,x0,y0,r); x.arcTo(x0,y0,x0+w,y0,r); x.closePath(); }
+  const C=t=>{x.textAlign="center"; return t;};
+  x.fillStyle=IVORY; x.fillRect(0,0,W,H);
+  // masthead
+  x.textAlign="center";
+  x.fillStyle=GOLD; x.font="600 22px "+SAN;
+  x.fillText((d.event.venue||"").toUpperCase().split(",")[0], W/2, 92);
+  x.fillStyle=NAVY; x.font="700 84px "+SER;
+  x.fillText("Not the Ryder Cup", W/2, 190);
+  x.strokeStyle=HAIR; x.lineWidth=2;
+  x.beginPath(); x.moveTo(200,240); x.lineTo(W/2-70,240); x.moveTo(W/2+70,240); x.lineTo(W-200,240); x.stroke();
+  x.fillStyle=GOLD; x.font="600 30px "+SER; x.fillText(y, W/2, 251);
+  const dd=d.days.filter(q=>q.date);
+  x.fillStyle=MUT; x.font="600 21px "+SAN;
+  const sub = "TOUR "+(LEGACY.tourNumbering[y]||"")+" · TROPHIES  BLUE "+LEGACY.trophyTally.BLUE+" — RED "+LEGACY.trophyTally.RED;
+  x.fillText(sub, W/2, 300);
+  // plaque
+  const P0=110, PW=W-220, PY=350, PH=430;
+  x.save(); x.shadowColor="rgba(18,35,65,.25)"; x.shadowBlur=40; x.shadowOffsetY=14;
+  const grad=x.createLinearGradient(0,PY,0,PY+PH); grad.addColorStop(0,NAVY2); grad.addColorStop(1,NAVY);
+  rr(P0,PY,PW,PH,12); x.fillStyle=grad; x.fill(); x.restore();
+  rr(P0+8,PY+8,PW-16,PH-16,8); x.strokeStyle="rgba(217,200,154,.55)"; x.lineWidth=2; x.stroke();
+  x.fillStyle=GOLDP; x.font="600 20px "+SAN; x.textAlign="center";
+  const total=ds.red+ds.blue;
+  x.fillText(total?"FINAL SCORE":"SCOREBOARD", W/2, PY+64);
+  const capR=d.players.find(p=>p.captain&&p.team==="RED"), capB=d.players.find(p=>p.captain&&p.team==="BLUE");
+  const lx=P0+PW*0.19, rx2=P0+PW*0.81;
+  x.font="600 17px "+SAN;
+  x.fillStyle="rgba(244,241,232,.6)";
+  if (capR) x.fillText("C · "+capR.name.toUpperCase(), lx, PY+150);
+  if (capB) x.fillText("C · "+capB.name.toUpperCase(), rx2, PY+150);
+  x.font="700 40px "+SER;
+  x.fillStyle="#e4a9a9"; x.fillText("RED", lx, PY+205);
+  x.fillStyle="#a9c2e8"; x.fillText("BLUE", rx2, PY+205);
+  if (+y >= (LEGACY.trophyTally.asOf||2025)){
+    x.fillStyle=GOLDP; x.font="16px "+SAN; x.globalAlpha=.8;
+    x.fillText("★".repeat(LEGACY.trophyTally.RED), lx, PY+238);
+    x.fillText("★".repeat(LEGACY.trophyTally.BLUE), rx2, PY+238);
+    x.globalAlpha=1;
+  }
+  const sTxt=half(ds.red)+"  –  "+half(ds.blue);
+  x.fillStyle="#f4f1e8"; x.font="700 "+(sTxt.length>9?96:120)+"px "+SER;
+  x.fillText(sTxt, W/2, PY+250);
+  x.fillStyle=GOLDP; x.font="600 24px "+SAN;
+  let verdict="AWAITING FIRST BLOOD";
+  if (total>0){
+    if (ds.red===ds.blue) verdict=((d.event.holdersBefore||"BLUE")==="BLUE"?"BLUES":"REDS")+" RETAIN THE TROPHY";
+    else verdict=(ds.blue>ds.red?"BLUE":"RED")+" LEAD";
+    const doneAll = d.days.every(q=>{const s=ds.days[q.day];return s.RED+s.BLUE>0;});
+    if (doneAll && ds.red!==ds.blue) verdict=(ds.blue>ds.red?"BLUE":"RED")+" WIN THE TROPHY";
+  }
+  x.fillText(verdict, W/2, PY+350);
+  // day cards 2x2
+  const DYY=PY+PH+60, CW=(PW-30)/2, CH=150;
+  d.days.forEach((q,i)=>{
+    const cx=P0+(i%2)*(CW+30), cy=DYY+Math.floor(i/2)*(CH+26);
+    rr(cx,cy,CW,CH,8); x.fillStyle="#fdfcf8"; x.fill(); x.strokeStyle=HAIR; x.lineWidth=2; x.stroke();
+    const s=ds.days[q.day];
+    x.textAlign="left";
+    x.fillStyle=NAVY; x.font="700 26px "+SER; x.fillText("Day "+q.day, cx+26, cy+48);
+    x.fillStyle=MUT; x.font="600 17px "+SAN;
+    x.fillText(((q.weekday||"")+" · "+cName(q.course)).toUpperCase(), cx+26, cy+78);
+    x.textAlign="right";
+    if (s.RED+s.BLUE>0){
+      x.font="700 40px "+SER;
+      const rw=x.measureText(half(s.BLUE)).width;
+      x.fillStyle=BLUE; x.fillText(half(s.BLUE), cx+CW-26, cy+62);
+      x.fillStyle=MUT;  x.fillText("–", cx+CW-26-rw-14, cy+62);
+      const dw=x.measureText("–").width;
+      x.fillStyle=RED;  x.fillText(half(s.RED), cx+CW-26-rw-14-dw-14, cy+62);
+      const w2=s.BLUE>s.RED?"BLUE DAY":(s.RED>s.BLUE?"RED DAY":"HALVED");
+      x.fillStyle=s.BLUE>s.RED?BLUE:(s.RED>s.BLUE?RED:MUT);
+      x.font="700 16px "+SAN; x.fillText(w2, cx+CW-26, cy+108);
+    } else { x.fillStyle="#a49d8d"; x.font="600 17px "+SAN; x.fillText("TO PLAY", cx+CW-26, cy+62); }
+  });
+  // Tourist Trophy top 3
+  const {ord}=ttRanks(y);
+  const played3=ord.filter(i=>played(y,i).length>0).slice(0,3);
+  let ty=DYY+2*(CH+26)+66;
+  if (played3.length){
+    x.textAlign="center"; x.fillStyle=NAVY; x.font="700 40px "+SER;
+    x.fillText("The Tourist Trophy", W/2, ty);
+    x.textAlign="left"; ty+=54;
+    played3.forEach((i,k)=>{
+      x.fillStyle=k===0?GOLD:MUT; x.font="700 26px "+SER;
+      x.fillText((k+1)+".", P0+40, ty);
+      x.fillStyle=k===0?GOLD:"#1c2740"; x.fillText(nm(y,i), P0+90, ty);
+      x.textAlign="right"; x.fillText(String(best3(y,i)), W-P0-40, ty);
+      x.textAlign="left"; ty+=44;
+    });
+  }
+  x.textAlign="center"; x.fillStyle="#a49d8d"; x.font="600 16px "+SAN;
+  x.fillText("OFFICIAL RECORD OF NOT THE RYDER CUP · TOUR "+(LEGACY.tourNumbering[y]||""), W/2, H-46);
+  // share or download
+  const done = m => { const el=document.getElementById("shareStatus"); if (el) el.textContent=m; };
+  cv.toBlob(async blob=>{
+    const file=new File([blob],"ntrc-"+y+"-board.png",{type:"image/png"});
+    if (navigator.canShare && navigator.canShare({files:[file]})){
+      try { await navigator.share({files:[file], title:"NTRC "+y}); done("Shared."); return; } catch(e){}
+    }
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="ntrc-"+y+"-board.png"; a.click();
+    done("Image saved — send it to the WhatsApp group.");
+  },"image/png");
+};
+
+/* ---------- full-site report image (all tabs, hand-drawn: reliable everywhere) ---------- */
+window.shareFull = () => {
+  const st=m=>{const el=document.getElementById("shareStatus"); if(el) el.textContent=m;};
+  st("Building the full report…");
+  setTimeout(()=>{ try{ buildFullReport(st); } catch(e){ st("Report failed ("+e.message+") — board image instead."); shareBoard(); } }, 30);
+};
+function buildFullReport(st){
+  const y=curYear, d=DATA[y], ds=dayScores(y);
+  const W=1080, L=90, CW=W-180;
+  const SER='Charter, "Iowan Old Style", Palatino, Georgia, serif';
+  const SAN='-apple-system, "Helvetica Neue", Arial, sans-serif';
+  const IVORY="#f7f4ec", CARD="#fdfcf8", INK="#1c2740", NAVY="#122341", NAVY2="#1a2f54",
+        GOLD="#a8863c", GOLDP="#d9c89a", RED="#a32636", BLUE="#1e4f8f", MUT="#7a7466",
+        FAINT="#a49d8d", HAIR="#e2dccb";
+  const meas=document.createElement("canvas").getContext("2d");
+  const tw=(f,s)=>{ meas.font=f; return meas.measureText(s).width; };
+  function wrapTxt(f,s,maxW){
+    const out=[]; let line="";
+    s.split(" ").forEach(w2=>{ const t=line?line+" "+w2:w2;
+      if (tw(f,t)>maxW && line){ out.push(line); line=w2; } else line=t; });
+    if (line) out.push(line); return out;
+  }
+  const ops=[]; let cy=0;
+  const T=(txt,x2,yy,f,fill,align)=>ops.push({o:"t",txt:String(txt),x:x2,y:yy,f,fill,align:align||"left"});
+  const RRECT=(x2,yy,w2,h2,r2,fill,stroke,lw)=>ops.push({o:"r",x:x2,y:yy,w:w2,h:h2,r:r2,fill,stroke,lw});
+  const LINE=(x1,y1,x2,y2,stroke,lw)=>ops.push({o:"l",x1,y1,x2,y2,stroke,lw});
+  const dayNames={1:"Day One",2:"Day Two",3:"Day Three",4:"Day Four"};
+  function divider(){
+    cy+=64;
+    LINE(L+120,cy,W/2-46,cy,"#cfc7ae",1); LINE(W/2+46,cy,W-L-120,cy,"#cfc7ae",1);
+    T("⁂",W/2,cy+7,"18px "+SAN,GOLD,"center");
+    cy+=58;
+  }
+  function secTitle(t,sub){
+    T(t,W/2,cy+34,"700 44px "+SER,NAVY,"center"); cy+=52;
+    if (sub){ T(sub.toUpperCase(),W/2,cy+18,"600 16px "+SAN,MUT,"center"); cy+=30; }
+    cy+=18;
+  }
+  /* ---- 1 · masthead + plaque + days ---- */
+  cy=70;
+  T((d.event.venue||"").toUpperCase().split(",")[0],W/2,cy,"600 21px "+SAN,GOLD,"center"); cy+=64;
+  T("Not the Ryder Cup",W/2,cy,"700 76px "+SER,NAVY,"center"); cy+=48;
+  LINE(220,cy,W/2-64,cy,HAIR,2); LINE(W/2+64,cy,W-220,cy,HAIR,2);
+  T(y,W/2,cy+9,"600 27px "+SER,GOLD,"center"); cy+=44;
+  T(("TOUR "+(LEGACY.tourNumbering[y]||"")+" · TROPHIES  BLUE "+LEGACY.trophyTally.BLUE+" — RED "+LEGACY.trophyTally.RED),
+    W/2,cy,"600 19px "+SAN,MUT,"center"); cy+=40;
+  const PY=cy, PH=400;
+  RRECT(L,PY,CW,PH,12,{grad:[NAVY2,NAVY]},null,0);
+  RRECT(L+8,PY+8,CW-16,PH-16,8,null,"rgba(217,200,154,.55)",2);
+  const total=ds.red+ds.blue;
+  T(total?"FINAL SCORE":"SCOREBOARD",W/2,PY+58,"600 19px "+SAN,GOLDP,"center");
+  const capR=d.players.find(p=>p.captain&&p.team==="RED"), capB=d.players.find(p=>p.captain&&p.team==="BLUE");
+  const lx=L+CW*0.19, rx2=L+CW*0.81;
+  if (capR) T("C · "+capR.name.toUpperCase(),lx,PY+130,"600 16px "+SAN,"rgba(244,241,232,.6)","center");
+  if (capB) T("C · "+capB.name.toUpperCase(),rx2,PY+130,"600 16px "+SAN,"rgba(244,241,232,.6)","center");
+  T("RED",lx,PY+180,"700 36px "+SER,"#e4a9a9","center");
+  T("BLUE",rx2,PY+180,"700 36px "+SER,"#a9c2e8","center");
+  if (+y >= (LEGACY.trophyTally.asOf||2025)){
+    T("★".repeat(LEGACY.trophyTally.RED),lx,PY+212,"15px "+SAN,GOLDP,"center");
+    T("★".repeat(LEGACY.trophyTally.BLUE),rx2,PY+212,"15px "+SAN,GOLDP,"center");
+  }
+  const sTxt=half(ds.red)+"  –  "+half(ds.blue);
+  T(sTxt,W/2,PY+240,"700 "+(sTxt.length>9?86:108)+"px "+SER,"#f4f1e8","center");
+  let verdict="AWAITING FIRST BLOOD";
+  if (total>0){
+    const doneAll=d.days.every(q=>{const s=ds.days[q.day];return s.RED+s.BLUE>0;});
+    if (ds.red===ds.blue) verdict=((d.event.holdersBefore||"BLUE")==="BLUE"?"BLUES":"REDS")+(doneAll?" RETAIN THE TROPHY":" LEVEL");
+    else verdict=(ds.blue>ds.red?"BLUE":"RED")+(doneAll?" WIN THE TROPHY":" LEAD");
+  }
+  T(verdict,W/2,PY+330,"600 23px "+SAN,GOLDP,"center");
+  cy=PY+PH+44;
+  const DCW=(CW-30)/2, DCH=140;
+  d.days.forEach((q,i)=>{
+    const cx=L+(i%2)*(DCW+30), cyy=cy+Math.floor(i/2)*(DCH+24);
+    RRECT(cx,cyy,DCW,DCH,8,CARD,HAIR,2);
+    const s=ds.days[q.day];
+    T("Day "+q.day,cx+26,cyy+46,"700 25px "+SER,NAVY);
+    T(((q.weekday||"")+" · "+cName(q.course)).toUpperCase(),cx+26,cyy+76,"600 16px "+SAN,MUT);
+    if (s.RED+s.BLUE>0){
+      const f="700 36px "+SER;
+      const bT=half(s.BLUE), dT="–", rT=half(s.RED);
+      let xx=cx+DCW-26;
+      T(bT,xx,cyy+56,f,BLUE,"right"); xx-=tw(f,bT)+13;
+      T(dT,xx,cyy+56,f,MUT,"right"); xx-=tw(f,dT)+13;
+      T(rT,xx,cyy+56,f,RED,"right");
+      const w2=s.BLUE>s.RED?"BLUE DAY":(s.RED>s.BLUE?"RED DAY":"HALVED");
+      T(w2,cx+DCW-26,cyy+104,"700 15px "+SAN,(s.BLUE>s.RED?BLUE:(s.RED>s.BLUE?RED:MUT)),"right");
+    } else T("TO PLAY",cx+DCW-26,cyy+56,"600 16px "+SAN,FAINT,"right");
+  });
+  cy+=2*(DCH+24)+8;
+  /* ---- 2 · match play ---- */
+  divider(); secTitle("Match Play","7 singles & bonus points each day");
+  d.days.forEach(q=>{
+    const s=ds.days[q.day];
+    const w2=s.BLUE>s.RED?"BLUE":(s.RED>s.BLUE?"RED":(s.RED?"HALVED":""));
+    cy+=14;
+    T(dayNames[q.day]+" — "+((q.weekday||"")+" · "+cName(q.course)),L,cy+22,"700 26px "+SER,NAVY);
+    if (w2) T((w2==="HALVED"?"HALVED":w2+" DAY")+"  "+half(s.RED)+"–"+half(s.BLUE),W-L,cy+22,
+      "700 17px "+SAN,(w2==="BLUE"?BLUE:(w2==="RED"?RED:MUT)),"right");
+    cy+=36; LINE(L,cy,W-L,cy,"#cfc7ae",1); cy+=8;
+    DATA[y].matches.filter(m=>m.day===q.day).forEach(m=>{
+      T((m.tee||"")+"  ·  "+(m.format==="2ball"?"TWO-BALL":"FOUR-BALL"),L,cy+20,"600 14px "+SAN,GOLD);
+      cy+=28;
+      m.singles.forEach(s2=>{
+        const {w:ww,note}=decide(s2);
+        const rn=nm(y,s2.red), bn=nm(y,s2.blue);
+        T(rn,L+14,cy+22,(ww==="RED"?"700":"400")+" 21px "+SAN,(ww==="RED"?RED:(ww?FAINT:INK)));
+        T(ww?note:"v",W/2,cy+22,"700 19px "+SER,(ww==="RED"?RED:(ww==="BLUE"?BLUE:MUT)),"center");
+        T(bn,W-L-14,cy+22,(ww==="BLUE"?"700":"400")+" 21px "+SAN,(ww==="BLUE"?BLUE:(ww?FAINT:INK)),"right");
+        cy+=33;
+      });
+      if (m.fourBBB){
+        const bw=m.fourBBB.winner;
+        T("FOUR-BALL BONUS · "+bw,W/2,cy+16,"700 14px "+SAN,(bw==="RED"?RED:(bw==="BLUE"?BLUE:MUT)),"center");
+        cy+=26;
+      } else if (m.format==="4ball"){ T("FOUR-BALL BONUS · —",W/2,cy+16,"700 14px "+SAN,FAINT,"center"); cy+=26; }
+      cy+=10;
+    });
+  });
+  /* ---- 3 · trophy ---- */
+  divider(); secTitle("The Tourist Trophy","Full-handicap Stableford · best three of four");
+  const {ord,ranks,tie}=ttRanks(y);
+  const anyPlayed=ord.some(i=>played(y,i).length);
+  if (anyPlayed){
+    LINE(L,cy,W-L,cy,NAVY,3); cy+=6;
+    const fullYr=ord.every(i=>played(y,i).length===d.days.length);
+    ord.forEach((i,k)=>{
+      cy+=44;
+      const pos=ranks[i], tpos=(tie[pos]>1?"T":"")+pos;
+      const isCh=k===0&&fullYr, isSp=k===ord.length-1&&fullYr;
+      if (isCh) RRECT(L,cy-30,CW,42,0,"rgba(168,134,60,.08)",null,0);
+      T(tpos,L+8,cy,"700 22px "+SER,(isCh?GOLD:MUT));
+      const stars2=ttCareerWins(i,+y);
+      T(nm(y,i)+(P(y)[i]&&P(y)[i].captain?"  Ⓒ":"")+(stars2?"  "+"★".repeat(Math.min(stars2,4)):""),
+        L+70,cy,"700 22px "+SAN,(isCh?GOLD:INK));
+      const rds=(d.rounds[i]||[]).map((v,kk)=>{
+        if (typeof v!=="number") return "–";
+        return (fullYr&&kk===discIdx(y,i))?"("+v+")":String(v);
+      }).join(" · ");
+      T(rds,L+430,cy,"400 19px "+SAN,MUT);
+      T(String(best3(y,i)||"–"),W-L-90,cy,"700 26px "+SER,(isCh?GOLD:NAVY),"right");
+      const nett=108-best3(y,i);
+      T(played(y,i).length?((nett>0?"+":"")+nett):"–",W-L-8,cy,"400 19px "+SAN,MUT,"right");
+      LINE(L,cy+12,W-L,cy+12,HAIR,1);
+    });
+    cy+=30;
+  } else { T("No rounds entered yet.",W/2,cy+20,"italic 20px "+SER,FAINT,"center"); cy+=40; }
+  /* ---- 4 · ammunition ---- */
+  const A=awards(y);
+  if (A.length){
+    divider(); secTitle("Dinner Ammunition","The unofficial awards · computed from the scores");
+    RRECT(L-10,cy-6,CW+20,10,0,null,null,0);   // no-op spacing marker
+    A.forEach(([t,w2,cls,stat,q])=>{
+      const who=String(w2).replace(/&amp;/g,"&").replace(/<[^>]*>/g,"");
+      const quote="“"+q+"”";
+      const qf="italic 19px "+SER;
+      const qLines=wrapTxt(qf,quote,CW-120);
+      const cardH=118+qLines.length*26;
+      RRECT(L,cy,CW,cardH,8,CARD,HAIR,2);
+      LINE(W/2-16,cy+22,W/2+16,cy+22,GOLD,2);
+      T(t.replace(/&amp;/g,"&"),W/2,cy+52,"700 24px "+SER,NAVY,"center");
+      const whoCol=cls==="who-red"?RED:(cls==="who-blue"?BLUE:GOLD);
+      T(who.toUpperCase(),W/2,cy+78,"700 16px "+SAN,whoCol,"center");
+      T(stat.replace(/&amp;/g,"&"),W/2,cy+102,"400 17px "+SAN,MUT,"center");
+      qLines.forEach((ln,k)=>T(ln,W/2,cy+128+k*26,qf,INK,"center"));
+      cy+=cardH+16;
+    });
+  }
+  /* ---- 5 · records ---- */
+  divider(); secTitle("The Record Book","Since the tour began");
+  const t2=LEGACY.trophyTally;
+  T(String(t2.BLUE),W/2-70,cy+44,"700 64px "+SER,BLUE,"center");
+  T("–",W/2,cy+44,"400 34px "+SER,FAINT,"center");
+  T(String(t2.RED),W/2+70,cy+44,"700 64px "+SER,RED,"center");
+  cy+=72;
+  T("TROPHIES, BLUE V RED · NEXT: TOUR "+(LEGACY.tourNumbering["2026"]||11),W/2,cy,"600 15px "+SAN,MUT,"center");
+  cy+=34;
+  Object.keys(DATA).sort().forEach(yy=>{
+    const dd2=DATA[yy]; const o2=ttOrder(yy);
+    if (!o2.length||!played(yy,o2[0]).length) return;
+    const ds2=dayScores(yy);
+    cy+=32;
+    T(yy,L+8,cy,"700 21px "+SER,GOLD);
+    T(nm(yy,o2[0])+"  "+best3(yy,o2[0]),L+110,cy,"700 21px "+SAN,INK);
+    T("Team "+half(ds2.red)+"–"+half(ds2.blue)+" · Spoon: "+sur(yy,o2[o2.length-1]),W-L-8,cy,"400 18px "+SAN,MUT,"right");
+    LINE(L,cy+10,W-L,cy+10,HAIR,1);
+  });
+  cy+=54;
+  T("OFFICIAL RECORD OF NOT THE RYDER CUP · "+y,W/2,cy,"600 15px "+SAN,FAINT,"center");
+  cy+=50;
+  /* ---- paint ---- */
+  let cw2=W, ch2=cy, scale=1;
+  const MAXA=16000000;
+  if (cw2*ch2>MAXA){ scale=Math.sqrt(MAXA/(cw2*ch2)); cw2=Math.floor(cw2*scale); ch2=Math.floor(ch2*scale); }
+  const cv=document.createElement("canvas"); cv.width=cw2; cv.height=ch2;
+  const x=cv.getContext("2d");
+  x.scale(scale,scale);
+  x.fillStyle=IVORY; x.fillRect(0,0,W,cy);
+  function rr2(x0,y0,w2,h2,r2){ x.beginPath(); x.moveTo(x0+r2,y0); x.arcTo(x0+w2,y0,x0+w2,y0+h2,r2);
+    x.arcTo(x0+w2,y0+h2,x0,y0+h2,r2); x.arcTo(x0,y0+h2,x0,y0,r2); x.arcTo(x0,y0,x0+w2,y0,r2); x.closePath(); }
+  ops.forEach(p=>{
+    if (p.o==="t"){ x.font=p.f; x.fillStyle=p.fill; x.textAlign=p.align; x.fillText(p.txt,p.x,p.y); }
+    else if (p.o==="r"){
+      if (p.fill){ rr2(p.x,p.y,p.w,p.h,p.r);
+        if (p.fill.grad){ const g=x.createLinearGradient(0,p.y,0,p.y+p.h);
+          g.addColorStop(0,p.fill.grad[0]); g.addColorStop(1,p.fill.grad[1]); x.fillStyle=g; }
+        else x.fillStyle=p.fill;
+        x.fill(); }
+      if (p.stroke){ rr2(p.x,p.y,p.w,p.h,p.r); x.strokeStyle=p.stroke; x.lineWidth=p.lw||1; x.stroke(); }
+    }
+    else if (p.o==="l"){ x.strokeStyle=p.stroke; x.lineWidth=p.lw||1;
+      x.beginPath(); x.moveTo(p.x1,p.y1); x.lineTo(p.x2,p.y2); x.stroke(); }
+  });
+  cv.toBlob(async blob=>{
+    if (!blob){ st("Image too large for this browser — board image instead."); shareBoard(); return; }
+    const file=new File([blob],"ntrc-"+y+"-full-report.png",{type:"image/png"});
+    if (navigator.canShare && navigator.canShare({files:[file]})){
+      try { await navigator.share({files:[file], title:"NTRC "+y+" — full report"}); st("Shared."); return; } catch(e){}
+    }
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="ntrc-"+y+"-full-report.png"; a.click();
+    st("Full report saved to Downloads — send it to the WhatsApp group.");
+  },"image/png");
+}
+function discIdx(y,i){
+  const v=DATA[y].rounds[i]||[];
+  const nums=v.filter(x2=>typeof x2==="number");
+  if (nums.length<4) return -1;
+  return v.indexOf(Math.min.apply(null,nums));
+}
+
+/* ---------- publish to team site (GitHub Pages) ---------- */
+function pubCfg(){ try{ return JSON.parse(localStorage.getItem("ntrc.publish")||"null"); }catch(e){ return null; } }
+window.pubSave = () => {
+  const v=id=>{const el=document.getElementById(id); return el?el.value.trim():"";};
+  const o={owner:v("pubOwner"), repo:v("pubRepo"), token:v("pubToken")};
+  if(!o.owner||!o.repo||!o.token){ alert("Need account, repository and token."); return; }
+  localStorage.setItem("ntrc.publish", JSON.stringify(o)); render();
+};
+window.publishNow = async () => {
+  const cfg=pubCfg();
+  const st=m=>{const el=document.getElementById("pubStatus"); if(el) el.textContent=m;};
+  if(!cfg){ st("Set up GitHub first (open the settings above)."); return; }
+  st("Publishing…");
+  try{
+    const payload={ publishedAt:new Date().toISOString(), build:BUILD };
+    Object.keys(DATA).forEach(k=>{ if(+k>=EDIT_FROM) payload[k]=DATA[k]; });
+    const body=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    const url="https://api.github.com/repos/"+cfg.owner+"/"+cfg.repo+"/contents/data.json";
+    const hdr={ "Authorization":"Bearer "+cfg.token, "Accept":"application/vnd.github+json" };
+    let sha=null;
+    const g=await fetch(url,{headers:hdr});
+    if (g.ok){ sha=(await g.json()).sha; }
+    const put=await fetch(url,{ method:"PUT", headers:hdr,
+      body:JSON.stringify({ message:"NTRC publish "+new Date().toISOString().slice(0,16),
+        content:body, ...(sha?{sha}:{}) }) });
+    if (put.ok) st("Published — the team site updates within a minute or two.");
+    else st("Publish failed ("+put.status+") — check the settings, or show me this number.");
+  } catch(e){ st("No connection — try again when there's signal. The WhatsApp image never fails."); }
+};
+
+/* ---------- shell ---------- */
+function render(){
+  const yrs=Object.keys(DATA).sort();
+  if (!DATA[curYear]) curYear=yrs[yrs.length-1];
+  const yearless = curTab==="records" || curTab==="setup" || curTab==="players";
+  document.getElementById("yearPills").innerHTML = yearless ? "" :
+    yrs.map(v=>'<button class="yr-pill'+(v===curYear?" on":"")+'" onclick="setYr(\''+v+'\')">'+v+'</button>').join("");
+  document.getElementById("tabbar").innerHTML = TABS.map(([k,l])=>
+    '<button class="tab'+(k===curTab?" on":"")+'" onclick="go(\''+k+'\')">'+l+'</button>').join("");
+  const v=document.getElementById("view");
+  try{
+    if (curTab==="board") v.innerHTML=vBoard(curYear);
+    else if (curTab==="match") v.innerHTML=vMatch(curYear);
+    else if (curTab==="trophy") v.innerHTML=vTrophy(curYear);
+    else if (curTab==="ammo") v.innerHTML=vAmmo(curYear);
+    else if (curTab==="records") v.innerHTML=vRecords();
+    else if (curTab==="players") v.innerHTML=vPlayers();
+    else if (curTab==="setup") v.innerHTML=vSetup();
+    else if (curTab==="draw") v.innerHTML=vDraw(curYear);
+    else v.innerHTML=vEnter(curYear);
+  }catch(e){ v.innerHTML='<div class="empty">Something went wrong rendering this view: '+esc(e.message)+'</div>'; }
+  v.innerHTML += '<footer class="foot">Official record of Not the Ryder Cup · Tour '+(LEGACY.tourNumbering[curYear]||"")+'<br><span style="opacity:.55">'+(READONLY?'team edition':'admin')+' · build '+BUILD+'</span></footer>';
+}
+window.go = t => { curTab=t; render(); window.scrollTo(0,0); };
+window.setYr = y => { curYear=y; render(); };
+render();
+</script>
+</body>
+</html>
