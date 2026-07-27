@@ -1,2 +1,3 @@
 User-agent: *
 Disallow: /keeper-b29bc071d364ef9b.html
+Disallow: /keeper.webmanifest
