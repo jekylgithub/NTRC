@@ -124,11 +124,37 @@ html,body{height:100%;background:var(--paper);overflow:hidden;}
 #gate.hide{animation:gateout 1s ease forwards}
 @keyframes gateout{to{opacity:0;visibility:hidden}}
 #ctl{position:fixed;bottom:16px;right:16px;z-index:20;display:flex;gap:8px;opacity:.5;transition:opacity .4s;}
+/* transport — sits out of the way until you reach for it */
+/* The whole bottom quarter is the scrub zone — a thin bar is no use with a thumb.
+   Drag to scrub, tap to pause. The controls fade but the zone stays grabbable. */
+#tp{position:fixed;left:0;right:0;bottom:0;z-index:22;display:none;align-items:flex-end;gap:12px;
+  height:clamp(112px,25vh,240px);touch-action:none;
+  padding:0 clamp(14px,4vw,26px) calc(env(safe-area-inset-bottom,0px) + 16px);
+  background:linear-gradient(to top,rgba(247,244,236,.95),rgba(247,244,236,0) 66%);
+  opacity:0;transition:opacity .35s;pointer-events:none;}
+#tp.live{display:flex;pointer-events:auto;}
+#tp.show{opacity:1;}
+#stage.seeking #reel *{transition:none!important;animation:none!important;}
+#bar{margin-bottom:1px;}
+#ctl.up{bottom:74px;}                      /* lift the sound button clear of the transport */
+#pp{flex:none;background:rgba(255,255,255,.82);border:1px solid rgba(26,37,64,.22);color:var(--navy);
+  border-radius:999px;width:40px;height:40px;font-size:13px;line-height:1;cursor:pointer;
+  backdrop-filter:blur(6px);font-family:var(--sans);}
+#bar{position:relative;flex:1;height:26px;cursor:pointer;touch-action:none;}
+#bar:before{content:"";position:absolute;left:0;right:0;top:11px;height:4px;border-radius:3px;
+  background:rgba(26,37,64,.16);}
+#ticks{position:absolute;left:0;right:0;top:11px;height:4px;}
+#ticks i{position:absolute;top:0;width:1px;height:4px;background:rgba(26,37,64,.3);}
+#fill{position:absolute;left:0;top:11px;height:4px;width:0;border-radius:3px;background:var(--gold);}
+#knob{position:absolute;top:6px;left:0;width:14px;height:14px;margin-left:-7px;border-radius:50%;
+  background:var(--gold);box-shadow:0 0 0 3px rgba(247,244,236,.9);}
+#tt{flex:none;font-family:var(--sans);font-size:11px;letter-spacing:.1em;color:rgba(26,37,64,.55);
+  font-variant-numeric:tabular-nums;min-width:64px;text-align:right;}
+#stage.frozen .kb,#stage.frozen #grain{animation-play-state:paused!important;}
+@media(max-width:520px){ #tt{min-width:56px;font-size:10px;} #tp{gap:9px;} }
 #stage:hover #ctl,#ctl.show{opacity:1;}
 .cbtn{background:rgba(255,255,255,.7);border:1px solid rgba(26,37,64,.2);color:var(--navy);border-radius:999px;
   width:42px;height:42px;font-size:16px;cursor:pointer;backdrop-filter:blur(6px);}
-#skip{position:fixed;top:16px;right:16px;z-index:20;background:none;border:none;color:rgba(26,37,64,.42);
-  font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;}
 /* persistent escape hatch — above the gate (z-31) so you're never trapped, incl. inside an installed PWA with no browser chrome */
 #exit{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:calc(env(safe-area-inset-left,0px) + 14px);
   z-index:31;background:rgba(255,255,255,.66);border:1px solid rgba(26,37,64,.18);color:var(--navy);
@@ -183,9 +209,16 @@ html,body{height:100%;background:var(--paper);overflow:hidden;}
   <div id="grain"></div>
   <div id="reel"></div>
   <div id="vig"></div>
-  <button id="skip">Skip ›</button>
   <button id="exit">✕ Close</button>
   <div id="ctl"><button class="cbtn" id="mute" title="Sound">♪</button></div>
+  <!-- transport: pause and scrub back to anything you missed -->
+  <div id="tp">
+    <button id="pp" title="Pause" aria-label="Pause">❚❚</button>
+    <div id="bar" role="slider" aria-label="Position" tabindex="0">
+      <div id="ticks"></div><div id="fill"></div><div id="knob"></div>
+    </div>
+    <div id="tt">0:00</div>
+  </div>
   <div id="replay">
     <div class="r-t">The wait begins.</div>
     <div class="r-s">1–4 October · Empordà</div>
@@ -217,22 +250,25 @@ const PHOTOS=[{"src": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA
 const C = (h,pos,an) => ({h,pos,an});
 const PH = i => (PHOTOS && PHOTOS[i]) ? i : null;
 const PAGES = [
-  {type:"stmt", t:3800, h:"<div class='ey fade'>Ten years. One cup.</div><div class='big grand d2'>THE<br>BUILD-UP</div>"},
+  {type:"stmt", t:3800, h:"<div class='ey fade'>Thirteen years. Two trophies.</div><div class='big grand d2'>THE<br>BUILD-UP</div>"},
+  // ---- the origin: a 50th birthday in Scotland, 2013 ----
+  {type:"stmt", t:5200, h:"<div class='ey fade'>It started with a birthday.</div><div class='mid rise d2'>Scotland, 2013.</div><div class='sub fade d4'>Kevin Kiff turned fifty. Thirteen years later, nobody has let him forget it.</div>"},
   {type:"photo", i:PH(0), t:4600},                                    // PGA Catalunya — where it began
   {type:"montage", t:13500, life:6400, stagger:2300, cards:[
     C("<div class='cbig'><span class='cn blue'>8</span><span class='cdash'>–</span><span class='cn red'>2</span></div><div class='cl'>Trophies won. Blue don't share.</div>","c","an-fade"),
-    C("<div class='cn'>10</div><div class='cl'>Tours played · two trophies</div><div class='cq'>The Cup and the Tourist Trophy.</div>","ml","an-l"),
-    C("<div class='cn red'>2</div><div class='cl'>Red wins in ten tours</div><div class='cq'>Blue have lifted it the other eight.</div>","br","an-r"),
-    C("<div class='cq'>“A decade painted blue.”</div>","bl","an-b"),
+    C("<div class='cn'>12</div><div class='cl'>Tours on record since 2014 · two trophies</div><div class='cq'>The Cup and the Tourist Trophy.</div>","ml","an-l"),
+    C("<div class='cn red'>2</div><div class='cl'>Red wins in ten renewals</div><div class='cq'>Blue have lifted it the other eight.</div>","br","an-r"),
+    C("<div class='cq'>“Ten renewals. Eight of them painted blue.”</div>","bl","an-b"),
   ]},
   {type:"photo", i:PH(3), t:4200}, {type:"photo", i:PH(2), t:4200},   // Team Blue 2021, Team Red 2021
   {type:"montage", t:14500, life:6600, stagger:2300, cards:[
     C("<div class='cn gold'>4</div><div class='cl'>Pearson's Tourist Trophies</div><div class='cq'>Nobody else has more than two.</div>","tl","an-l"),
     C("<div class='cn'>137</div><div class='cl'>Trundle, 2023 — the record</div>","c","an-sk2"),
-    C("<div class='cn'>6</div><div class='cl'>Different champions in ten years</div>","bl","an-b"),
-    C("<div class='cq'>Lawrence. Bilkhoo. They have all held it aloft.</div>","tr","an-t"),
+    C("<div class='cn'>7</div><div class='cl'>Different champions in twelve tours</div>","bl","an-b"),
+    C("<div class='cq'>Maddison. Breeze. Pappachan. Lawrence. Bilkhoo. Trundle. All have held it aloft.</div>","tr","an-t"),
   ]},
   {type:"photo", i:PH(4), t:4200}, {type:"photo", i:PH(6), t:4200},   // Pearson trophy 2022, swing
+  {type:"stmt", t:5400, h:"<div class='ey fade'>2020. COVID-19.</div><div class='mid rise d2'>The world shut down.</div><div class='mid rise2 gold d3'>The tour did not.</div><div class='sub fade d5'>Two years at Saunton because nobody could leave the country. Four years in the end, because nobody wanted to.</div>"},
   {type:"stmt", t:3800, h:"<div class='mid rise'>Records don't win cups.</div><div class='mid rise2 gold'>Grudges do.</div>"},
   {type:"montage", t:15000, life:6800, stagger:2400, cards:[
     C("<div class='nm2'><span class='blue'>KIFF</span> owns <span class='red'>PEARSON</span></div><div class='sc2'>3 – 0</div><div class='cq'>Never beaten him. Not once.</div>","ml","an-l"),
@@ -245,7 +281,7 @@ const PAGES = [
     C("<div class='cn'>191</div><div class='cl'>Shots MacDowell has been given</div><div class='cq'>Still chasing a first title.</div>","tl","an-sk"),
     C("<div class='cl red'>Reigning wooden spoon</div><div class='nm2'>EDDIE FOX</div>","mr","an-r"),
     C("<div class='cq'>The handicap committee is already watching.</div>","bl","an-b"),
-    C("<div class='nm2'><span class='red'>WRIGHT</span> v <span class='blue'>KIFF</span></div><div class='sc2'>1 – 1</div><div class='cl'>One apiece in singles · the captains must break the tie</div>","c","an-fade"),
+    C("<div class='nm2'><span class='red'>WRIGHT</span> v <span class='blue'>KIFF</span></div><div class='sc2'>1 – 1</div><div class='cl'>One apiece in singles matches · the captains must break the tie</div>","c","an-fade"),
   ]},
   {type:"photo", i:PH(8), t:4200}, {type:"photo", i:PH(9), t:4200},   // Captains 2024, Team 2025
   {type:"stmt", t:4200, h:"<div class='big rise'>14 <span class='gold'>men</span></div><div class='big rise2'>4 <span class='gold'>days</span></div><div class='big rise3'>40 <span class='gold'>points</span></div>"},
@@ -255,7 +291,7 @@ const PAGES = [
     C("<div class='cq'>Everyone else just wants the Trophy.</div>","bc","an-b"),
   ]},
   {type:"photo", i:PH(10), t:4400},                                   // Blue retain 2025
-  {type:"stmt", t:5600, h:"<div class='title'><div class='l1 fade'>Tour XI · The Eleventh Renewal</div><div class='rule growR d2'></div><div class='l2 grand d2'>NOT THE<br>RYDER CUP</div><div class='rule growR d4'></div><div class='l3 fade d5'>Empordà · 1–4 October 2026</div></div>"},
+  {type:"stmt", t:5600, h:"<div class='title'><div class='l1 fade'>Tour XI · The Thirteenth Gathering</div><div class='rule growR d2'></div><div class='l2 grand d2'>NOT THE<br>RYDER CUP</div><div class='rule growR d4'></div><div class='l3 fade d5'>Empordà · 1–4 October 2026</div></div>"},
   // ---- THE FOURTEEN: every man in the 2026 party gets his own roast (facts computed from 2021–25) ----
   {type:"stmt", t:3600, h:"<div class='ey fade'>The Fourteen</div><div class='mid rise d2'>Everyone gets a mention.</div><div class='sub fade d4'>Nobody gets away clean.</div>"},
   {type:"montage", t:12200, life:6400, stagger:2300, cards:[
@@ -269,18 +305,19 @@ const PAGES = [
     C("<div class='nm2 red'>CAPTAIN WRIGHT</div><div class='cl'>Leads Red off a handicap of 37</div><div class='cq'>Captaincy by shot allowance.</div>","bc","an-b"),
   ]},
   {type:"montage", t:12200, life:6400, stagger:2300, cards:[
-    C("<div class='nm2 blue'>KEVIN KIFF</div><div class='cl'>Five tours · zero trophies · now captain</div><div class='cq'>Leading by example remains optional.</div>","tr","an-t"),
-    C("<div class='nm2 blue'>AL HUGHES</div><div class='sc2'>9 – 9</div><div class='cl'>Twenty singles, dead level</div><div class='cq'>The human coin toss.</div>","ml","an-l"),
+    C("<div class='nm2 blue'>KEVIN KIFF</div><div class='cl'>Twelve tours · zero trophies · now captain</div><div class='cq'>Second in 2019 on countback. Closest he has come.</div>","tr","an-t"),
+    C("<div class='nm2 blue'>AL HUGHES</div><div class='sc2'>9 – 9</div><div class='cl'>Twenty singles matches, dead level</div><div class='cq'>The human coin toss.</div>","ml","an-l"),
     C("<div class='nm2 red'>GARETH JONES</div><div class='cl'>Four duels with Kiff · still 2 – 2</div><div class='cq'>Somebody blink.</div>","br","an-r"),
   ]},
   {type:"montage", t:12200, life:6400, stagger:2300, cards:[
-    C("<div class='nm2 blue'>JUSTIN LAWRENCE</div><div class='cl'>Runs the tour · one trophy from five</div><div class='cq'>Never once beaten John Pappachan. 0 – 3.</div>","tl","an-sk"),
+    C("<div class='nm2 blue'>JUSTIN LAWRENCE</div><div class='cl'>Runs the tour · two trophies from nine</div><div class='cq'>Never once beaten John Pappachan. 0 – 3.</div>","tl","an-sk"),
     C("<div class='nm2 red'>WILL WILLIAMS</div><div class='sc2'>6 – 9</div><div class='cl'>The comeback has to start somewhere</div>","mr","an-r"),
-    C("<div class='nm2 red'>ANDY WATSON</div><div class='cl'>Twelve singles · not one halved</div><div class='cq'>Wins or loses. Never shares.</div>","bl","an-l"),
+    C("<div class='nm2 red'>ANDY WATSON</div><div class='cl'>Twelve singles matches · not one halved</div><div class='cq'>Wins or loses. Never shares.</div>","bl","an-l"),
   ]},
   {type:"montage", t:12200, life:6400, stagger:2300, cards:[
     C("<div class='nm2 blue'>BRIAN DAVIDSON</div><div class='sc2'>5 – 3</div><div class='cl'>Winning record · handicap up 17 → 27</div><div class='cq'>The committee sees you.</div>","tl","an-l"),
-    C("<div class='nm2 blue'>JULIAN LEGG</div><div class='cl'>Back after two years away</div><div class='sc2'>5 – 2</div><div class='cq'>A record that says he never should've left.</div>","mr","an-r"),
+    C("<div class='nm2 blue'>JULIAN LEGG</div><div class='cl'>Second on debut · 2014</div><div class='sc2'>5 – 2</div><div class='cq'>Twelve years chasing that afternoon.</div>","mr","an-r"),
+    C("<div class='cn gold'>58</div><div class='cl'>Tours between Kiff, Jones, Hughes, Williams and Wright</div><div class='cq'>Trophies between them: none.</div>","tr","an-t"),
     C("<div class='cq'>Fourteen reputations. Four days. One hat.</div>","bc","an-fade"),
   ]},
   {type:"stmt", t:8200, h:"<div class='ey fade'>The Class of 2026</div><div class='squad rise d2'><div class='sq-col sq-red'><div class='sq-h'>Red</div><div class='nmx cap'>Chris Wright<span class='cc'>\u00a9</span></div><div class='nmx'>Andy Watson</div><div class='nmx'>Bruce Fox</div><div class='nmx'>Gareth Jones</div><div class='nmx'>Simon Trundle</div><div class='nmx'>Tom Pearson</div><div class='nmx'>Will Williams</div></div><div class='sq-col sq-blue'><div class='sq-h'>Blue</div><div class='nmx cap'>Kevin Kiff<span class='cc'>\u00a9</span></div><div class='nmx'>Al Hughes</div><div class='nmx'>Brian Davidson</div><div class='nmx'>Bruce Rodda</div><div class='nmx'>Eddie Fox</div><div class='nmx'>Julian Legg</div><div class='nmx'>Justin Lawrence</div></div></div><div class='sub fade d4'>14 men. Two trophies. See you in Empord\u00e0.</div>"},
@@ -292,9 +329,25 @@ const PAGES = [
 // vertical bands, each with horizontal variants — [top][ ], [middle][ ], [bottom][ ]
 const BANDS=[["tl","tr","tc"],["ml","mr","c"],["bl","br","bc"]];
 const reel=document.getElementById("reel");
+/* Every pending step is held with the time it is still owed, so a pause can put
+   them all down and pick them all up exactly where they were. */
 let timers=[];
-function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
-function later(fn,ms){ const id=setTimeout(fn,ms); timers.push(id); return id; }
+function clearTimers(){ timers.forEach(t=>{ if(t.id) clearTimeout(t.id); }); timers=[]; }
+function later(fn,ms){
+  const t={fn:fn, rem:ms, due:Date.now()+ms, id:null};
+  const fire=()=>{ timers=timers.filter(x=>x!==t); t.fn(); };
+  if (typeof paused!=="undefined" && paused) { t.id=null; }   // paused mid-page: hold it
+  else t.id=setTimeout(fire, ms);
+  t.fire=fire; timers.push(t); return t;
+}
+function holdTimers(){
+  const now=Date.now();
+  timers.forEach(t=>{ if(t.id) clearTimeout(t.id); t.rem=Math.max(0, t.due-now); t.id=null; });
+}
+function releaseTimers(){
+  const now=Date.now();
+  timers.forEach(t=>{ t.due=now+t.rem; t.id=setTimeout(t.fire, t.rem); });
+}
 function fadeRemove(el, after){ if(!el)return; el.classList.remove("in"); el.classList.add("out");
   later(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, after||1300); }
 function clearStage(){ Array.prototype.slice.call(reel.children).forEach(el=>fadeRemove(el,1300)); }
@@ -303,9 +356,16 @@ function spawnCard(c, life){
   reel.appendChild(el); void el.offsetWidth; el.classList.add("in");
   later(()=>fadeRemove(el,1300), life);
 }
-function runPage(i){
+/* `into` = how far into this page we are landing. Scrubbing uses it to build the
+   frame as it WOULD look at that instant: anything already due is done at once,
+   anything already gone is skipped, and the rest keeps its remaining delay. That
+   is what makes the scrubber seek by the second instead of by the page. */
+function runPage(i, into){
   if(i>=PAGES.length){ later(showReplay, 900); return; }
   const p=PAGES[i];
+  into = into||0;
+  curPage=i; pageT0=Date.now()-into;
+  const at=(fn,ms)=>{ const d=ms-into; if(d<=0){ fn(); } else later(fn,d); };
   clearStage();
   if(p.type==="stmt"){
     const el=document.createElement("div"); el.className="stmt go"; el.innerHTML=p.h;
@@ -320,18 +380,192 @@ function runPage(i){
     reel.appendChild(el); void el.offsetWidth; el.classList.add("in");
     if(ph.cap){ const c=document.createElement("div"); c.className="lower";
       c.innerHTML='<div class="lc">'+ph.cap+'</div><div class="ls">Not the Ryder Cup</div>';
-      reel.appendChild(c); void c.offsetWidth; later(()=>c.classList.add("in"), 500); }
+      reel.appendChild(c); void c.offsetWidth; at(()=>c.classList.add("in"), 500); }
   } else if(p.type==="montage"){
     // place each card in a different vertical band from its neighbours, so cards that
     // are on screen together can never overlap (life < 3×stagger ⇒ ≤3 alive at once).
     p.cards.forEach((c,k)=>{
       const band=(k+i)%3, hv=(k*2+i)%3;
       const pos=BANDS[band][hv];
-      later(()=>spawnCard({h:c.h, pos:pos, an:c.an}, p.life), k*p.stagger + 200);
+      const spawn=k*p.stagger + 200;
+      if (spawn + p.life <= into) return;                 // came and went before we arrived
+      const life = (spawn<=into) ? (spawn + p.life - into) : p.life;
+      at(()=>spawnCard({h:c.h, pos:pos, an:c.an}, life), spawn);
     });
   }
-  later(()=>runPage(i+1), p.t);
+  at(()=>runPage(i+1), p.t);
 }
+
+/* ============ transport: pause, and scrub back to anything you missed ============
+   The reel is a sequence of timed pages, not a media file, so the scrubber SNAPS TO
+   PAGE STARTS — which is what you want anyway when the thing you missed is a card.
+   Pausing freezes the stage; resuming replays the current page from its beginning,
+   so no card is ever skipped by a pause landing mid-stagger.                        */
+let curPage=0, pageT0=0, paused=false, pauseStart=0, tpTimer=null;
+const PAGE_DUR=PAGES.map(p=>(p.type==="photo" && p.i==null) ? 0 : p.t);
+const PAGE_START=[]; (function(){ let a=0; PAGE_DUR.forEach(d=>{ PAGE_START.push(a); a+=d; }); })();
+const TOTAL=PAGE_DUR.reduce((a,b)=>a+b,0);
+const tp=document.getElementById("tp"), ppBtn=document.getElementById("pp");
+const barEl=document.getElementById("bar"), fillEl=document.getElementById("fill");
+const knobEl=document.getElementById("knob"), ttEl=document.getElementById("tt");
+const mmss=ms=>{ const t=Math.max(0,Math.round(ms/1000)); return Math.floor(t/60)+":"+String(t%60).padStart(2,"0"); };
+(function ticks(){
+  const box=document.getElementById("ticks");
+  box.innerHTML=PAGE_START.filter((v,i)=>PAGE_DUR[i]>0 && v>0)
+    .map(v=>'<i style="left:'+(v/TOTAL*100).toFixed(3)+'%"></i>').join("");
+})();
+function elapsed(){
+  const into = paused ? (pauseStart-pageT0) : (Date.now()-pageT0);
+  return Math.min(TOTAL, (PAGE_START[curPage]||0) + Math.min(into, PAGE_DUR[curPage]||0));
+}
+function paintOnce(){
+  const pc=TOTAL?elapsed()/TOTAL*100:0;
+  fillEl.style.width=pc+"%"; knobEl.style.left=pc+"%";
+  ttEl.textContent=mmss(elapsed())+" / "+mmss(TOTAL);
+}
+function paint(){
+  const pc=TOTAL?elapsed()/TOTAL*100:0;
+  fillEl.style.width=pc+"%"; knobEl.style.left=pc+"%";
+  ttEl.textContent=mmss(elapsed())+" / "+mmss(TOTAL);
+  if(!paused) requestAnimationFrame(paint);
+}
+function showTp(){
+  tp.classList.add("show");
+  clearTimeout(tpTimer);
+  if(!paused) tpTimer=setTimeout(()=>tp.classList.remove("show"), 2800);
+}
+/* Freeze the picture exactly as it stands — including anything mid-fade. CSS
+   animations take animation-play-state; transitions can't be paused, so the
+   current computed values are pinned inline and released on resume, which lets
+   the fade carry on from where it stopped rather than restarting. */
+function freezeStage(){
+  const st=document.getElementById("stage");
+  st.classList.add("frozen");
+  Array.prototype.forEach.call(reel.querySelectorAll("*"), el=>{
+    const cs=getComputedStyle(el);
+    el.__fz={t:el.style.transition, o:el.style.opacity, r:el.style.transform};
+    el.style.transition="none";
+    el.style.opacity=cs.opacity;
+    el.style.transform=(cs.transform==="none")?"":cs.transform;
+  });
+}
+function thawStage(){
+  const st=document.getElementById("stage");
+  st.classList.remove("frozen");
+  const els=Array.prototype.slice.call(reel.querySelectorAll("*")).filter(el=>el.__fz);
+  els.forEach(el=>{ el.style.transition=el.__fz.t; });        // transitions live again…
+  requestAnimationFrame(()=>els.forEach(el=>{                 // …then let them run on
+    if(!el.__fz) return;
+    el.style.opacity=el.__fz.o; el.style.transform=el.__fz.r;
+    delete el.__fz;
+  }));
+}
+function setPaused(v){
+  if(v===paused) return;
+  paused=v;
+  if(v){
+    pauseStart=Date.now();
+    holdTimers();
+    freezeStage();
+    try{ if(AC && AC.state==="running") AC.suspend(); }catch(e){}
+    if(trackEl){ try{ trackEl.pause(); }catch(e){} }
+    ppBtn.textContent="\u25B6"; ppBtn.title="Play";
+  } else {
+    pageT0 += Date.now()-pauseStart;      // the clock owes back exactly what it lost
+    thawStage();
+    try{ if(AC && AC.state==="suspended") AC.resume(); }catch(e){}
+    if(trackEl && !muted){ try{ trackEl.play(); }catch(e){} }
+    ppBtn.textContent="\u275A\u275A"; ppBtn.title="Pause";
+    releaseTimers();
+    requestAnimationFrame(paint);
+  }
+  showTp();
+}
+/* Seek to a moment, not to a chapter. Renders the frame as it stands at time t,
+   and — crucially — leaves the reel paused if that is how it found it. */
+function seekTo(frac, opts){
+  const wasPaused = (opts && "keepPaused" in opts) ? opts.keepPaused : paused;
+  const t=Math.max(0,Math.min(1,frac))*TOTAL;
+  let i=0; for(let k=0;k<PAGES.length;k++){ if(PAGE_DUR[k]>0 && PAGE_START[k]<=t) i=k; }
+  const into=Math.max(0, Math.min((PAGE_DUR[i]||1)-1, t-(PAGE_START[i]||0)));
+  const st=document.getElementById("stage");
+  clearTimers();
+  paused=false;                                   // let runPage arm its timers normally
+  st.classList.add("seeking");                    // land on the frame, don't fade into it
+  runPage(i, into);
+  void reel.offsetWidth;
+  st.classList.remove("seeking");
+  document.getElementById("replay").classList.remove("show");
+  if (wasPaused){
+    paused=true; pauseStart=Date.now();
+    holdTimers(); freezeStage();
+    ppBtn.textContent="\u25B6"; ppBtn.title="Play";
+  } else {
+    st.classList.remove("frozen");
+    try{ if(AC && AC.state==="suspended") AC.resume(); }catch(e){}
+    if(trackEl && !muted){ try{ trackEl.play(); }catch(e){} }
+    ppBtn.textContent="\u275A\u275A"; ppBtn.title="Pause";
+  }
+  paintOnce(); requestAnimationFrame(paint); showTp();
+}
+function nudge(sec){                              // a second at a time, staying paused
+  seekTo((elapsed()+sec*1000)/TOTAL);
+}
+const fracFromX=x=>{ const r=barEl.getBoundingClientRect(); return (x-r.left)/r.width; };
+/* In the zone: a drag scrubs, a tap plays or pauses — the usual player gesture. */
+let downT=0, downX=0, moved=false, dragPaused=false, lastSeek=0, seekPending=null;
+tp.addEventListener("pointerdown", e=>{
+  if(e.target.closest("#pp")) return;                 // the button speaks for itself
+  e.preventDefault(); e.stopPropagation();
+  downT=Date.now(); downX=e.clientX; moved=false; dragPaused=paused;
+  try{ tp.setPointerCapture(e.pointerId); }catch(err){}
+  showTp();
+});
+tp.addEventListener("pointermove", e=>{
+  if(!downT) return;
+  if(!moved && Math.abs(e.clientX-downX)>6) moved=true;
+  if(!moved) return;
+  const f=Math.max(0,Math.min(1,fracFromX(e.clientX)));
+  // the bar and the clock follow the thumb every frame; the picture is rebuilt at
+  // ~12/sec, which is plenty and keeps a long swipe from thrashing the DOM
+  fillEl.style.width=(f*100)+"%"; knobEl.style.left=(f*100)+"%";
+  ttEl.textContent=mmss(f*TOTAL)+" / "+mmss(TOTAL);
+  const now=Date.now();
+  clearTimeout(seekPending);
+  if(now-lastSeek>80){ lastSeek=now; seekTo(f,{keepPaused:dragPaused}); }
+  else seekPending=setTimeout(()=>{ lastSeek=Date.now(); seekTo(f,{keepPaused:dragPaused}); }, 80);
+});
+const endDrag=e=>{
+  if(!downT) return;
+  if(!moved) setPaused(!paused);                      // a tap down here = pause/play
+  else { clearTimeout(seekPending);
+         seekTo(fracFromX(e.clientX), {keepPaused:dragPaused}); }   // land exactly where released
+  downT=0; moved=false;
+};
+tp.addEventListener("pointerup", endDrag);
+tp.addEventListener("pointercancel", endDrag);
+barEl.addEventListener("keydown", e=>{
+  if(e.key==="ArrowLeft"){ e.preventDefault(); e.shiftKey?runPageSafe(curPage-1):nudge(-1); }
+  if(e.key==="ArrowRight"){ e.preventDefault(); e.shiftKey?runPageSafe(curPage+1):nudge(1); } });
+function runPageSafe(i){
+  let k=Math.max(0,Math.min(PAGES.length-1,i));
+  while(k>0 && PAGE_DUR[k]===0) k--;
+  seekTo((PAGE_START[k]||0)/TOTAL);
+}
+ppBtn.addEventListener("click", e=>{ e.stopPropagation(); setPaused(!paused); });
+/* Anywhere else on the picture: tap to pause, tap to carry on. */
+document.getElementById("stage").addEventListener("click", e=>{
+  if(!tp.classList.contains("live")) return;
+  if(e.target.closest("#tp,#exit,#ctl,#replay,#gate")) return;
+  setPaused(!paused);
+});
+["mousemove","touchstart","pointerdown"].forEach(ev=>
+  document.getElementById("stage").addEventListener(ev, showTp, {passive:true}));
+document.addEventListener("keydown", e=>{
+  if(tp.classList.contains("live")===false) return;
+  if(e.code==="Space"){ e.preventDefault(); setPaused(!paused); }
+  else if(e.key==="ArrowLeft"){ e.preventDefault(); e.shiftKey?runPageSafe(curPage-1):nudge(-1); }
+  else if(e.key==="ArrowRight"){ e.preventDefault(); e.shiftKey?runPageSafe(curPage+1):nudge(1); } });
 
 /* ============ audio ============ */
 const SOUNDTRACK="";
@@ -411,7 +645,8 @@ const cv=document.getElementById("fx"), cx=cv.getContext("2d");
 let W,H,parts=[],raf=null;
 function newP(){ return {x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.8+0.3,s:Math.random()*0.28+0.06,d:Math.random()*0.4-0.2,a:Math.random()*0.28+0.06}; }
 function resize(){ W=cv.width=innerWidth; H=cv.height=innerHeight; parts=Array.from({length:56},newP); }
-function draw(){ cx.clearRect(0,0,W,H);
+function draw(){ if(typeof paused!=="undefined" && paused){ raf=requestAnimationFrame(draw); return; }
+  cx.clearRect(0,0,W,H);
   for(const p of parts){ p.y-=p.s; p.x+=p.d; if(p.y<-8){Object.assign(p,newP(),{y:H+8});}
     cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fillStyle="rgba(168,134,60,"+p.a+")"; cx.fill(); }
   raf=requestAnimationFrame(draw); }
@@ -419,9 +654,13 @@ addEventListener("resize",resize); resize();
 
 /* ============ transport ============ */
 function showReplay(){ document.getElementById("replay").classList.add("show"); document.getElementById("ctl").classList.add("show");
+  tp.classList.remove("live","show"); document.getElementById("ctl").classList.remove("up");
   if(trackEl) fadeVol(trackEl, 0, 2200); }        // fade the music out as the reel ends
 
 function playReel(){ clearTimers(); reel.innerHTML=""; document.getElementById("replay").classList.remove("show");
+  paused=false; pauseStart=0; document.getElementById("stage").classList.remove("frozen");
+  ppBtn.textContent="❚❚"; tp.classList.add("live"); document.getElementById("ctl").classList.add("up");
+  showTp(); requestAnimationFrame(paint);
   if(trackEl) fadeVol(trackEl, muted?0:0.9, 1500);   // fade back in on replay
   if(!raf) draw(); runPage(0); }
 function begin(){
@@ -439,7 +678,6 @@ function exitReel(){
 }
 document.getElementById("exit").addEventListener("click", e=>{ e.stopPropagation(); exitReel(); });
 document.getElementById("gate").addEventListener("click", begin);
-document.getElementById("skip").addEventListener("click", ()=>{ clearTimers(); reel.innerHTML=""; showReplay(); });
 document.getElementById("mute").addEventListener("click", e=>{ e.stopPropagation(); muted=!muted;
   if(master) master.gain.value=muted?0:0.62; if(trackEl) trackEl.volume=muted?0:0.9;
   document.getElementById("mute").textContent=muted?"✕":"♪"; });
