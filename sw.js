@@ -5,6 +5,9 @@ self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.
 self.addEventListener("fetch",e=>{
   if(e.request.method!=="GET") return;
   const req=e.request;
+  /* The page keeps its own saved copy. Answering a failed data request with the app
+     page made it fail in a confusing way, and every ?t= URL added a cache entry. */
+  if(new URL(req.url).pathname.endsWith("/data.json")){ e.respondWith(fetch(req)); return; }
   const fresh=(req.mode==="navigate")
     ? new Request(req.url,{cache:"reload",credentials:"same-origin"})   // always ask the network for the page
     : req;
